@@ -19,4 +19,8 @@ venv\Scripts\activate
 ```powershell
 pip install -r requirements.txt
 ```
+### 4. Run code
+```powershell
+python chess.py
+```
 <br>
