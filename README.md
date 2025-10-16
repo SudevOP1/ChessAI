@@ -1,6 +1,7 @@
 # ChessAI
 
 This project aims to develop a chess playing ai bot<br>
+[pygame docs](https://www.pygame.org/docs/)
 <br>
 
 ## 🚀 How to run it locally
