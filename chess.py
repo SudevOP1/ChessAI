@@ -55,24 +55,40 @@ class ChessGame:
 
                 # drop held piece
                 if event.type == py.MOUSEBUTTONUP and event.button == 1:
-                    _mouse_x, _mouse_y = event.pos
-                    _square_iex_ok, (_n_col_i, _n_row_i) = get_square_index(
-                        _mouse_x, _mouse_y
-                    )
-                    _square_center = get_square_center(_n_col_i, _n_row_i)
-                    if _square_iex_ok:
-                        self.held_piece.rect.center = _square_center
-                        self.board[self.held_piece.row_i][self.held_piece.col_i] = " "
-                        for _piece in self.pieces.sprites():
-                            if (
-                                _piece is not self.held_piece
-                                and _piece.rect.collidepoint(_square_center)
-                            ):
-                                self.pieces.remove(_piece)
-                        self.board[_n_row_i][_n_col_i] = self.held_piece.name
-                        self.held_piece.row_i = _n_row_i
-                        self.held_piece.col_i = _n_col_i
-                        self.held_piece = None
+                    if self.held_piece is not None:
+                        _mouse_x, _mouse_y = event.pos
+                        _square_index_ok, (_n_col_i, _n_row_i) = get_square_index(
+                            _mouse_x, _mouse_y
+                        )
+                        _square_center = get_square_center(_n_col_i, _n_row_i)
+                        if _square_index_ok:
+                            self.held_piece.rect.center = _square_center
+                            self.board[self.held_piece.row_i][
+                                self.held_piece.col_i
+                            ] = " "
+                            _capture = False
+                            for _piece in self.pieces.sprites():
+                                if (
+                                    _piece is not self.held_piece
+                                    and _piece.rect.collidepoint(_square_center)
+                                ):
+                                    self.pieces.remove(_piece)
+                                    _capture = True
+                                    break
+                            self.board[_n_row_i][_n_col_i] = self.held_piece.name
+                            self.held_piece.row_i = _n_row_i
+                            self.held_piece.col_i = _n_col_i
+                            self.held_piece = None
+
+                            if _capture:
+                                self.play_sound("capture")
+                            else:
+                                self.play_sound("move")
+                        else:
+                            self.held_piece.rect.center = get_square_center(
+                                self.held_piece.row_i, self.held_piece.col_i
+                            )
+                            self.held_piece = None
 
                 # move held piece
                 if event.type == py.MOUSEMOTION and self.held_piece is not None:
@@ -222,6 +238,11 @@ class ChessGame:
         _text_rect = _text_surf.get_rect()
         _text_rect.topright = (WINDOW_WIDTH - _padding, _padding)
         self.window.blit(_text_surf, _text_rect)
+
+    # ====================== other functions ======================
+
+    def play_sound(self, sound_name: str) -> None:
+        self.sounds[sound_name].play()
 
 
 if __name__ == "__main__":

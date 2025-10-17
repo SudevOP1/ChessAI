@@ -24,7 +24,7 @@ def get_square_center(row_i: int, col_i: int) -> tuple[int, int]:
 
 
 def get_square_index(x: int, y: int) -> tuple[bool, tuple[int, int]]:
-    """tells which square the mouse (or a pixel) is over, if it’s on the board"""
+    """tells which square the a pixel is over, if its on the board"""
     _padding_x, _padding_y = get_window_board_padding()
     if (
         x < _padding_x
