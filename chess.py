@@ -2,7 +2,7 @@ import pygame as py
 import os
 
 from settings import *
-from sprites import *
+# from sprites import *
 from helpers import *
 
 DEBUG = True
