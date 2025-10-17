@@ -1,5 +1,4 @@
 import pygame as py
-import os
 
 from settings import *
 from sprites import *
@@ -57,30 +56,34 @@ class ChessGame:
                 if event.type == py.MOUSEBUTTONUP and event.button == 1:
                     if self.held_piece is not None:
                         _mouse_x, _mouse_y = event.pos
-                        _square_index_ok, (_n_col_i, _n_row_i) = get_square_index(
+                        _square_index_ok, (_to_row_i, _to_col_i) = get_square_index(
                             _mouse_x, _mouse_y
                         )
-                        _square_center = get_square_center(_n_col_i, _n_row_i)
-                        if _square_index_ok:
-                            self.held_piece.rect.center = _square_center
-                            self.board[self.held_piece.row_i][
-                                self.held_piece.col_i
-                            ] = " "
-                            _capture = False
-                            for _piece in self.pieces.sprites():
-                                if (
-                                    _piece is not self.held_piece
-                                    and _piece.rect.collidepoint(_square_center)
-                                ):
-                                    self.pieces.remove(_piece)
-                                    _capture = True
-                                    break
-                            self.board[_n_row_i][_n_col_i] = self.held_piece.name
-                            self.held_piece.row_i = _n_row_i
-                            self.held_piece.col_i = _n_col_i
+                        _to_square_center = get_square_center(_to_row_i, _to_col_i)
+                        _from_row_i = self.held_piece.row_i
+                        _from_col_i = self.held_piece.col_i
+                        if _square_index_ok and not (
+                            _from_col_i == _to_col_i and _from_row_i == _to_row_i
+                        ):
+                            _eci_move = get_eci_move(
+                                self.held_piece, _to_row_i, _to_col_i
+                            )  # TODO: promotion
+                            print(_eci_move)
+
+                            self.board[_from_row_i][_from_col_i] = " "
+                            self.board[_to_row_i][_to_col_i] = self.held_piece.name
+
+                            _captured_piece = self.get_captured_piece(_to_square_center)
+                            if _captured_piece is not None:
+                                self.pieces.remove(_captured_piece)
+
+                            self.held_piece.rect.center = _to_square_center
+                            self.held_piece.row_i = _to_row_i
+                            self.held_piece.col_i = _to_col_i
                             self.held_piece = None
 
-                            if _capture:
+                            # playing sound here
+                            if _captured_piece is not None:
                                 self.play_sound("capture")
                             else:
                                 self.play_sound("move")
@@ -243,6 +246,16 @@ class ChessGame:
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
+
+    def get_captured_piece(
+        self, to_square_center: tuple[int, int]
+    ) -> ChessPiece | None:
+        for _piece in self.pieces.sprites():
+            if (_piece is not self.held_piece) and _piece.rect.collidepoint(
+                to_square_center
+            ):
+                return _piece
+        return None
 
 
 if __name__ == "__main__":

@@ -1,4 +1,26 @@
+import chess
+
 from settings import *
+from sprites import *
+
+# ====================== chess related ======================
+
+
+def get_eci_move(
+    chess_piece: ChessPiece,
+    to_row_i: int,
+    to_col_i: int,
+    promotion: str | None = None,
+) -> str:
+    _from_row_i = chess_piece.row_i
+    _from_col_i = chess_piece.col_i
+    _from_sq = get_square_notation(_from_row_i, _from_col_i)
+    _to_sq = get_square_notation(to_row_i, to_col_i)
+    promotion = promotion if promotion else ""
+    return _from_sq + _to_sq + promotion
+
+
+# ====================== others ======================
 
 
 def print_debug(DEBUG, *args, **kwargs) -> None:
@@ -33,9 +55,9 @@ def get_square_index(x: int, y: int) -> tuple[bool, tuple[int, int]]:
         or y > WINDOW_HEIGHT - _padding_y
     ):
         return False, (x, y)
-    col_i = (x - _padding_x) // SQUARE_SIZE
-    row_i = (y - _padding_y) // SQUARE_SIZE
-    return True, (row_i, col_i)
+    _row_i = (y - _padding_y) // SQUARE_SIZE
+    _col_i = (x - _padding_x) // SQUARE_SIZE
+    return True, (_row_i, _col_i)
 
 
 def get_square_notation(row_i: int, col_i: int) -> str:
@@ -43,6 +65,6 @@ def get_square_notation(row_i: int, col_i: int) -> str:
 
 
 def get_index_notation(square: str) -> tuple[int, int]:
-    col_i = ord(square[0]) - 97
-    row_i = 8 - int(square[1])
-    return (row_i, col_i)
+    _col_i = ord(square[0]) - 97
+    _row_i = 8 - int(square[1])
+    return (_row_i, _col_i)

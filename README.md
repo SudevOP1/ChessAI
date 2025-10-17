@@ -21,6 +21,6 @@ pip install -r requirements.txt
 ```
 ### 4. Run code
 ```powershell
-python chess.py
+python chess_game.py
 ```
 <br>
