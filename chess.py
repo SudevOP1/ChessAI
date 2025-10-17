@@ -26,6 +26,7 @@ class ChessGame:
         self.padding_y = (WINDOW_HEIGHT - 8 * SQUARE_SIZE) // 2
         self.clock = py.time.Clock()
         self.running = True
+        self.held_piece = None
 
         # load assets
         py.mixer.init()
@@ -38,10 +39,32 @@ class ChessGame:
     def run(self):
         while self.running:
             for event in py.event.get():
+
+                # quit
                 if event.type == py.QUIT or (
                     event.type == py.KEYDOWN and event.key == py.K_ESCAPE
                 ):
                     self.running = False
+                    break
+
+                # start dragging piece
+                if event.type == py.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        for _piece in self.pieces.sprites():
+                            if _piece.rect.collidepoint(event.pos):
+                                self.held_piece = _piece
+
+                # stop dragging piece
+                if event.type == py.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        self.held_piece = None
+
+                # move held piece
+                if event.type == py.MOUSEMOTION:
+                    if self.held_piece is not None:
+                        mouse_x, mouse_y = event.pos
+                        self.held_piece.rect.centerx = mouse_x
+                        self.held_piece.rect.centery = mouse_y
 
             # rendering game here
             self.window.fill(BG_COLOR)
@@ -96,6 +119,8 @@ class ChessGame:
                     _pieces.add(
                         ChessPiece(
                             _piece_surf,
+                            row_ind=_row_ind,
+                            col_ind=_col_ind,
                             center=(
                                 self.padding_x
                                 + (_col_ind * SQUARE_SIZE)
