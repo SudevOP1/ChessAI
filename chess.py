@@ -22,11 +22,9 @@ class ChessGame:
 
         # vars
         self.board = INIT_POS
-        self.padding_x = (WINDOW_WIDTH - 8 * SQUARE_SIZE) // 2
-        self.padding_y = (WINDOW_HEIGHT - 8 * SQUARE_SIZE) // 2
         self.clock = py.time.Clock()
         self.running = True
-        self.held_piece = None
+        self.held_piece: py.sprite.Sprite | None = None
 
         # load assets
         py.mixer.init()
@@ -48,30 +46,45 @@ class ChessGame:
                     break
 
                 # start dragging piece
-                if event.type == py.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        for _piece in self.pieces.sprites():
-                            if _piece.rect.collidepoint(event.pos):
-                                self.held_piece = _piece
+                if event.type == py.MOUSEBUTTONDOWN and event.button == 1:
+                    for _piece in self.pieces.sprites():
+                        if _piece.rect.collidepoint(event.pos):
+                            self.held_piece = _piece
+                            self.pieces.remove(self.held_piece)
+                            self.pieces.add(self.held_piece)
 
-                # stop dragging piece
-                if event.type == py.MOUSEBUTTONUP:
-                    if event.button == 1:
+                # drop held piece
+                if event.type == py.MOUSEBUTTONUP and event.button == 1:
+                    _mouse_x, _mouse_y = event.pos
+                    _square_iex_ok, (_n_col_i, _n_row_i) = get_square_index(
+                        _mouse_x, _mouse_y
+                    )
+                    _square_center = get_square_center(_n_col_i, _n_row_i)
+                    if _square_iex_ok:
+                        self.held_piece.rect.center = _square_center
+                        self.board[self.held_piece.row_i][self.held_piece.col_i] = " "
+                        for _piece in self.pieces.sprites():
+                            if (
+                                _piece is not self.held_piece
+                                and _piece.rect.collidepoint(_square_center)
+                            ):
+                                self.pieces.remove(_piece)
+                        self.board[_n_row_i][_n_col_i] = self.held_piece.name
+                        self.held_piece.row_i = _n_row_i
+                        self.held_piece.col_i = _n_col_i
                         self.held_piece = None
 
                 # move held piece
-                if event.type == py.MOUSEMOTION:
-                    if self.held_piece is not None:
-                        mouse_x, mouse_y = event.pos
-                        self.held_piece.rect.centerx = mouse_x
-                        self.held_piece.rect.centery = mouse_y
+                if event.type == py.MOUSEMOTION and self.held_piece is not None:
+                    _mouse_x, _mouse_y = event.pos
+                    self.held_piece.rect.centerx = _mouse_x
+                    self.held_piece.rect.centery = _mouse_y
 
             # rendering game here
             self.window.fill(BG_COLOR)
 
             self.draw_board()
             self.draw_pieces()
-            self.draw_mouse_pointer()
             self.draw_fps()
 
             py.display.flip()
@@ -111,24 +124,18 @@ class ChessGame:
 
     def load_pieces(self) -> py.sprite.Group:
         _pieces = py.sprite.Group()
-        for _row_ind in range(8):
-            for _col_ind in range(8):
-                _piece_name = self.board[_row_ind][_col_ind]
+        for _row_i in range(8):
+            for _col_i in range(8):
+                _piece_name = self.board[_row_i][_col_i]
                 if _piece_name != " ":
                     _piece_surf = self.piece_surfs[_piece_name]
                     _pieces.add(
                         ChessPiece(
                             _piece_surf,
-                            row_ind=_row_ind,
-                            col_ind=_col_ind,
-                            center=(
-                                self.padding_x
-                                + (_col_ind * SQUARE_SIZE)
-                                + (SQUARE_SIZE / 2),
-                                self.padding_y
-                                + (_row_ind * SQUARE_SIZE)
-                                + (SQUARE_SIZE / 2),
-                            ),
+                            row_i=_row_i,
+                            col_i=_col_i,
+                            center=get_square_center(_row_i, _col_i),
+                            name=_piece_name,
                         )
                     )
         return _pieces
@@ -168,19 +175,6 @@ class ChessGame:
 
     # ====================== draw functions ======================
 
-    def draw_mouse_pointer(self) -> None:
-        _pointer_size = 7
-        mouse_x, mouse_y = py.mouse.get_pos()
-        py.draw.circle(self.window, (255, 0, 0), (mouse_x, mouse_y), _pointer_size)
-
-        # left mouse button
-        if py.mouse.get_pressed()[0]:
-            py.draw.circle(self.window, (0, 255, 0), (mouse_x, mouse_y), _pointer_size)
-
-        # right mouse button
-        if py.mouse.get_pressed()[2]:
-            py.draw.circle(self.window, (0, 0, 255), (mouse_x, mouse_y), _pointer_size)
-
     def draw_board(self) -> None:
         for _row in range(8):
             for _col in range(8):
@@ -212,7 +206,11 @@ class ChessGame:
                         BOARD_CORNER_RADIUS if _row == 7 and _col == 7 else 0
                     ),
                 )
-        self.window.blit(self.board_surf, (self.padding_x, self.padding_y))
+        _padding_x, _padding_y = get_window_board_padding()
+        self.window.blit(
+            self.board_surf,
+            (_padding_x, _padding_y),
+        )
 
     def draw_pieces(self) -> None:
         self.pieces.draw(self.window)
