@@ -36,3 +36,13 @@ def get_square_index(x: int, y: int) -> tuple[bool, tuple[int, int]]:
     col_i = (x - _padding_x) // SQUARE_SIZE
     row_i = (y - _padding_y) // SQUARE_SIZE
     return True, (row_i, col_i)
+
+
+def get_square_notation(row_i: int, col_i: int) -> str:
+    return chr(col_i + 97) + str(8 - row_i)
+
+
+def get_index_notation(square: str) -> tuple[int, int]:
+    col_i = ord(square[0]) - 97
+    row_i = 8 - int(square[1])
+    return (row_i, col_i)
