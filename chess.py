@@ -2,7 +2,7 @@ import pygame as py
 import os
 
 from settings import *
-# from sprites import *
+from sprites import *
 from helpers import *
 
 DEBUG = True
@@ -10,13 +10,9 @@ DEBUG = True
 
 class ChessGame:
 
-    def __init__(self):
+    # ====================== main functions ======================
 
-        # assets
-        self.piece_surfs = {}
-        self.sounds = {}
-        self.font_24 = None
-        self.board_surf = None
+    def __init__(self):
 
         # window setup
         py.init()
@@ -33,13 +29,38 @@ class ChessGame:
 
         # load assets
         py.mixer.init()
-        self.load_piece_surfs()
-        self.load_sounds()
+        self.sounds = self.load_sounds()
         self.font_24 = self.load_font(24)
         self.board_surf = self.load_board_surf()
+        self.piece_surfs = self.load_piece_surfs()
+        self.pieces = self.load_pieces()
 
-    def load_piece_surfs(self) -> None:
+    def run(self):
+        while self.running:
+            for event in py.event.get():
+                if event.type == py.QUIT or (
+                    event.type == py.KEYDOWN and event.key == py.K_ESCAPE
+                ):
+                    self.running = False
+
+            # rendering game here
+            self.window.fill(BG_COLOR)
+
+            self.draw_board()
+            self.draw_pieces()
+            self.draw_mouse_pointer()
+            self.draw_fps()
+
+            py.display.flip()
+            self.clock.tick(GAME_FPS)  # fps
+
+        py.quit()
+
+    # ====================== load functions ======================
+
+    def load_piece_surfs(self) -> dict[str, py.Surface]:
         try:
+            _piece_surfs = {}
             for _piece_name in [
                 "k",
                 "q",
@@ -56,16 +77,44 @@ class ChessGame:
             ]:
                 _piece_path = PIECE_IMG_PATHS[_piece_name]
                 _piece_surf = py.image.load(_piece_path).convert_alpha()
-                self.piece_surfs[_piece_name] = py.transform.smoothscale(
+                _piece_surfs[_piece_name] = py.transform.smoothscale(
                     _piece_surf, (SQUARE_SIZE, SQUARE_SIZE)
                 )
             print_debug(DEBUG, f"loaded piece imgs")
+            return _piece_surfs
         except Exception as e:
             print(f"failed to load piece img {_piece_path}: {e}")
             exit()
 
-    def load_sounds(self) -> None:
+    def load_pieces(self) -> py.sprite.Group:
+        _pieces = py.sprite.Group()
+        for _row_ind in range(8):
+            for _col_ind in range(8):
+                _piece_name = self.board[_row_ind][_col_ind]
+                if _piece_name != " ":
+                    _piece_surf = self.piece_surfs[_piece_name]
+                    _pieces.add(
+                        ChessPiece(
+                            _piece_surf,
+                            center=(
+                                self.padding_x
+                                + (_col_ind * SQUARE_SIZE)
+                                + (SQUARE_SIZE / 2),
+                                self.padding_y
+                                + (_row_ind * SQUARE_SIZE)
+                                + (SQUARE_SIZE / 2),
+                            ),
+                        )
+                    )
+        return _pieces
+
+    def load_board_surf(self) -> py.Surface:
+        _board_surf = py.Surface((8 * SQUARE_SIZE, 8 * SQUARE_SIZE), py.SRCALPHA)
+        return _board_surf
+
+    def load_sounds(self) -> dict[str, py.mixer.Sound]:
         try:
+            _sounds = {}
             for _sound_name in [
                 "capture",
                 "castle",
@@ -76,8 +125,9 @@ class ChessGame:
                 _sound_path = SOUND_PATHS[_sound_name]
                 _sound = py.mixer.Sound(_sound_path)
                 # sound.set_volume(1) # TODO: set appropriate volume
-                self.sounds[_sound_name] = _sound
+                _sounds[_sound_name] = _sound
             print_debug(DEBUG, f"loaded sounds")
+            return _sounds
         except Exception as e:
             print(f"failed to load sound file {_sound_path}: {e}")
             exit()
@@ -91,9 +141,7 @@ class ChessGame:
             print(f"failed to load font {FONT_PATH}: {e}")
             exit()
 
-    def load_board_surf(self) -> py.Surface:
-        _board_surf = py.Surface((8 * SQUARE_SIZE, 8 * SQUARE_SIZE), py.SRCALPHA)
-        return _board_surf
+    # ====================== draw functions ======================
 
     def draw_mouse_pointer(self) -> None:
         _pointer_size = 7
@@ -142,22 +190,7 @@ class ChessGame:
         self.window.blit(self.board_surf, (self.padding_x, self.padding_y))
 
     def draw_pieces(self) -> None:
-        for _row_ind in range(8):
-            for _col_ind in range(8):
-                _piece_name = self.board[_row_ind][_col_ind]
-                if _piece_name != " ":
-                    _piece_surf = self.piece_surfs[_piece_name]
-                    _piece_rect = _piece_surf.get_rect(
-                        center=(
-                            self.padding_x
-                            + (_col_ind * SQUARE_SIZE)
-                            + (SQUARE_SIZE / 2),
-                            self.padding_y
-                            + (_row_ind * SQUARE_SIZE)
-                            + (SQUARE_SIZE / 2),
-                        )
-                    )
-                    self.window.blit(_piece_surf, _piece_rect)
+        self.pieces.draw(self.window)
 
     def draw_fps(self) -> None:
         _fps = int(self.clock.get_fps())
@@ -166,27 +199,6 @@ class ChessGame:
         _text_rect = _text_surf.get_rect()
         _text_rect.topright = (WINDOW_WIDTH - _padding, _padding)
         self.window.blit(_text_surf, _text_rect)
-
-    def run(self):
-        while self.running:
-            for event in py.event.get():
-                if event.type == py.QUIT or (
-                    event.type == py.KEYDOWN and event.key == py.K_ESCAPE
-                ):
-                    self.running = False
-
-            # rendering game here
-            self.window.fill(BG_COLOR)
-
-            self.draw_board()
-            self.draw_pieces()
-            self.draw_mouse_pointer()
-            self.draw_fps()
-
-            py.display.flip()
-            self.clock.tick(GAME_FPS)  # fps
-
-        py.quit()
 
 
 if __name__ == "__main__":
