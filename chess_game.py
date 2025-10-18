@@ -45,6 +45,7 @@ class ChessGame:
                     self.running = False
                     break
 
+                # mouse pressed
                 if event.type == py.MOUSEBUTTONDOWN:
 
                     # start dragging piece
@@ -65,42 +66,7 @@ class ChessGame:
                                 _btn_rect.collidepoint(event.pos)
                                 and _piece_name in _promotion_pieces
                             ):
-                                _to_row_i = self.promotion_query["to_row_i"]
-                                _to_col_i = self.promotion_query["to_col_i"]
-                                _pawn_piece = self.promotion_query["piece"]
-                                _to_square_center = get_square_center(
-                                    _to_row_i, _to_col_i
-                                )
-
-                                _eci_move = get_eci_move(
-                                    _pawn_piece,
-                                    _to_row_i,
-                                    _to_col_i,
-                                    _piece_name,
-                                )
-                                print(_eci_move)
-
-                                self.board[_to_row_i][_to_col_i] = _piece_name
-                                _captured_piece = self.get_captured_piece(
-                                    _to_square_center
-                                )
-                                if _captured_piece is not None:
-                                    self.pieces.remove(_captured_piece)
-                                self.pieces.remove(self.held_piece)
-                                self.held_piece = None
-                                self.promotion_query = None
-
-                                self.pieces.add(
-                                    ChessPiece(
-                                        self.piece_surfs[_piece_name],
-                                        _to_col_i,
-                                        _to_row_i,
-                                        _piece_name,
-                                        center=_to_square_center,
-                                    )
-                                )
-
-                                # playing sound here
+                                self.promote(_piece_name)
                                 self.play_sound("promotion")
                                 break
 
@@ -111,17 +77,22 @@ class ChessGame:
                             self.reset_held_piece()
                             self.promotion_query = None
 
-                # drop held piece
-                if event.type == py.MOUSEBUTTONUP and event.button == 1:
-                    if self.held_piece is not None:
+                # mouse released
+                if event.type == py.MOUSEBUTTONUP:
+
+                    # drop held piece
+                    if event.button == 1 and self.held_piece is not None:
                         _mouse_x, _mouse_y = event.pos
                         self.drop_held_piece(_mouse_x, _mouse_y)
 
-                # move held piece
-                if event.type == py.MOUSEMOTION and self.held_piece is not None:
-                    _mouse_x, _mouse_y = event.pos
-                    self.held_piece.rect.centerx = _mouse_x
-                    self.held_piece.rect.centery = _mouse_y
+                # mouse moved
+                if event.type == py.MOUSEMOTION:
+
+                    # move held piece
+                    if self.held_piece is not None:
+                        _mouse_x, _mouse_y = event.pos
+                        self.held_piece.rect.centerx = _mouse_x
+                        self.held_piece.rect.centery = _mouse_y
 
             # rendering game here
             self.window.fill(BG_COLOR)
@@ -355,6 +326,38 @@ class ChessGame:
                 self.play_sound("move")
         else:
             self.reset_held_piece()
+
+    def promote(self, piece_name: str) -> None:
+        _to_row_i = self.promotion_query["to_row_i"]
+        _to_col_i = self.promotion_query["to_col_i"]
+        _pawn_piece = self.promotion_query["piece"]
+        _to_square_center = get_square_center(_to_row_i, _to_col_i)
+
+        _eci_move = get_eci_move(
+            _pawn_piece,
+            _to_row_i,
+            _to_col_i,
+            piece_name,
+        )
+        print(_eci_move)
+
+        self.board[_to_row_i][_to_col_i] = piece_name
+        _captured_piece = self.get_captured_piece(_to_square_center)
+        if _captured_piece is not None:
+            self.pieces.remove(_captured_piece)
+        self.pieces.remove(self.held_piece)
+        self.held_piece = None
+        self.promotion_query = None
+
+        self.pieces.add(
+            ChessPiece(
+                self.piece_surfs[piece_name],
+                _to_col_i,
+                _to_row_i,
+                piece_name,
+                center=_to_square_center,
+            )
+        )
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
