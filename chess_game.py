@@ -24,6 +24,7 @@ class ChessGame:
         self.clock = py.time.Clock()
         self.running = True
         self.held_piece: py.sprite.Sprite | None = None
+        self.promotion_query: dict | None = None
 
         # load assets
         py.mixer.init()
@@ -45,7 +46,11 @@ class ChessGame:
                     break
 
                 # start dragging piece
-                if event.type == py.MOUSEBUTTONDOWN and event.button == 1:
+                if (
+                    event.type == py.MOUSEBUTTONDOWN
+                    and event.button == 1
+                    and self.promotion_query is None
+                ):
                     for _piece in self.pieces.sprites():
                         if _piece.rect.collidepoint(event.pos):
                             self.held_piece = _piece
@@ -69,6 +74,7 @@ class ChessGame:
 
             self.draw_board()
             self.draw_pieces()
+            self.draw_promotion_query()
             self.draw_fps()
 
             py.display.flip()
@@ -207,6 +213,40 @@ class ChessGame:
         _text_rect.topright = (WINDOW_WIDTH - _padding, _padding)
         self.window.blit(_text_surf, _text_rect)
 
+    def draw_promotion_query(self) -> None:
+        if self.promotion_query is not None:
+            _color_white = self.promotion_query["color_white"]
+            _reverse = 1 if _color_white else -1
+            _to_col_i = self.promotion_query["to_col_i"]
+            _to_row_i = self.promotion_query["to_row_i"]
+
+            _promotion_pieces = ["Q", "R", "B", "N"]
+            if not _color_white:
+                _promotion_pieces = [_piece.lower() for _piece in _promotion_pieces]
+
+            for _idx, _piece in enumerate(_promotion_pieces):
+                _piece_surf = self.piece_surfs[_piece]
+                _piece_rect = _piece_surf.get_rect(
+                    center=get_square_center(_to_row_i + _reverse * _idx, _to_col_i)
+                )
+                py.draw.rect(self.window, PROMOTION_QUERY_BG_COLOR, _piece_rect)
+                self.window.blit(_piece_surf, _piece_rect)
+
+            # close btn
+            _close_btn_rect = self.get_close_btn_rect(_to_row_i, _to_col_i, _reverse)
+            _close_btn_text_surf = self.font_24.render(
+                "X", True, PROMOTION_QUERY_CLOSE_BTN_COLOR
+            )
+            py.draw.rect(
+                self.window,
+                PROMOTION_QUERY_CLOSE_BTN_BG_COLOR,
+                _close_btn_rect,
+            )
+            self.window.blit(
+                _close_btn_text_surf,
+                _close_btn_text_surf.get_rect(center=_close_btn_rect.center),
+            )
+
     # ====================== other functions ======================
 
     def drop_held_piece(self, _mouse_x: int, _mouse_y: int) -> None:
@@ -217,6 +257,16 @@ class ChessGame:
         if _square_index_ok and not (
             _from_col_i == _to_col_i and _from_row_i == _to_row_i
         ):
+            # handling promotion
+            if (self.held_piece.name == "P" and _to_row_i == 0) or (
+                self.held_piece.name == "p" and _to_row_i == 7
+            ):
+                self.promotion_query = {
+                    "color_white": True if self.held_piece.name == "P" else False,
+                    "to_col_i": _to_col_i,
+                    "to_row_i": _to_row_i,
+                }
+
             _eci_move = get_eci_move(
                 self.held_piece, _to_row_i, _to_col_i
             )  # TODO: promotion
@@ -257,6 +307,12 @@ class ChessGame:
             ):
                 return _piece
         return None
+
+    def get_close_btn_rect(self, to_row_i: int, to_col_i: int, reverse: int) -> py.Rect:
+        _close_btn_rect = py.Rect(0, 0, SQUARE_SIZE, PROMOTION_QUERY_CLOSE_BTN_HEIGHT)
+        _close_btn_rect.center = get_square_center(to_row_i + reverse * 4, to_col_i)
+        _close_btn_rect.centery -= reverse * _close_btn_rect.height // 2
+        return _close_btn_rect
 
 
 if __name__ == "__main__":

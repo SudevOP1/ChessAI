@@ -7,6 +7,7 @@ GAME_FPS = 60
 
 SQUARE_SIZE = 80
 BOARD_CORNER_RADIUS = 20
+PROMOTION_QUERY_CLOSE_BTN_HEIGHT = SQUARE_SIZE * 0.5
 
 
 INIT_POS = [
@@ -22,9 +23,12 @@ INIT_POS = [
 
 
 BG_COLOR = "#00082A"
+PROMOTION_QUERY_BG_COLOR = "#ffffff"
+PROMOTION_QUERY_CLOSE_BTN_BG_COLOR = "#c8c8c8"
+PROMOTION_QUERY_CLOSE_BTN_COLOR = "#000000"
 THEMES = {
-    "ocean": ["#7397AC", "#D4DFE5"],
-    "neo": ["#739552", "#ebecd0"],
+    "ocean" : ["#7397AC", "#D4DFE5"],
+    "neo"   : ["#739552", "#ebecd0"],
 }
 THEME = "ocean"
 
@@ -44,9 +48,9 @@ PIECE_IMG_PATHS = {
     "P": "assets/pieces/wp.png",
 }
 SOUND_PATHS = {
-    "capture":  "assets/sounds/capture.mp3",
-    "castle":   "assets/sounds/castle.mp3",
-    "check":    "assets/sounds/check.mp3",
-    "move":     "assets/sounds/move.mp3",
-    "promotion":"assets/sounds/promotion.mp3",
+    "capture"   : "assets/sounds/capture.mp3",
+    "castle"    : "assets/sounds/castle.mp3",
+    "check"     : "assets/sounds/check.mp3",
+    "move"      : "assets/sounds/move.mp3",
+    "promotion" : "assets/sounds/promotion.mp3",
 }
