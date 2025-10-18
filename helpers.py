@@ -3,6 +3,7 @@ import chess
 from settings import *
 from sprites import *
 
+
 # ====================== chess related ======================
 
 

@@ -56,42 +56,7 @@ class ChessGame:
                 if event.type == py.MOUSEBUTTONUP and event.button == 1:
                     if self.held_piece is not None:
                         _mouse_x, _mouse_y = event.pos
-                        _square_index_ok, (_to_row_i, _to_col_i) = get_square_index(
-                            _mouse_x, _mouse_y
-                        )
-                        _to_square_center = get_square_center(_to_row_i, _to_col_i)
-                        _from_row_i = self.held_piece.row_i
-                        _from_col_i = self.held_piece.col_i
-                        if _square_index_ok and not (
-                            _from_col_i == _to_col_i and _from_row_i == _to_row_i
-                        ):
-                            _eci_move = get_eci_move(
-                                self.held_piece, _to_row_i, _to_col_i
-                            )  # TODO: promotion
-                            print(_eci_move)
-
-                            self.board[_from_row_i][_from_col_i] = " "
-                            self.board[_to_row_i][_to_col_i] = self.held_piece.name
-
-                            _captured_piece = self.get_captured_piece(_to_square_center)
-                            if _captured_piece is not None:
-                                self.pieces.remove(_captured_piece)
-
-                            self.held_piece.rect.center = _to_square_center
-                            self.held_piece.row_i = _to_row_i
-                            self.held_piece.col_i = _to_col_i
-                            self.held_piece = None
-
-                            # playing sound here
-                            if _captured_piece is not None:
-                                self.play_sound("capture")
-                            else:
-                                self.play_sound("move")
-                        else:
-                            self.held_piece.rect.center = get_square_center(
-                                self.held_piece.row_i, self.held_piece.col_i
-                            )
-                            self.held_piece = None
+                        self.drop_held_piece(_mouse_x, _mouse_y)
 
                 # move held piece
                 if event.type == py.MOUSEMOTION and self.held_piece is not None:
@@ -243,6 +208,42 @@ class ChessGame:
         self.window.blit(_text_surf, _text_rect)
 
     # ====================== other functions ======================
+
+    def drop_held_piece(self, _mouse_x: int, _mouse_y: int) -> None:
+        _square_index_ok, (_to_row_i, _to_col_i) = get_square_index(_mouse_x, _mouse_y)
+        _to_square_center = get_square_center(_to_row_i, _to_col_i)
+        _from_row_i = self.held_piece.row_i
+        _from_col_i = self.held_piece.col_i
+        if _square_index_ok and not (
+            _from_col_i == _to_col_i and _from_row_i == _to_row_i
+        ):
+            _eci_move = get_eci_move(
+                self.held_piece, _to_row_i, _to_col_i
+            )  # TODO: promotion
+            print(_eci_move)
+
+            self.board[_from_row_i][_from_col_i] = " "
+            self.board[_to_row_i][_to_col_i] = self.held_piece.name
+
+            _captured_piece = self.get_captured_piece(_to_square_center)
+            if _captured_piece is not None:
+                self.pieces.remove(_captured_piece)
+
+            self.held_piece.rect.center = _to_square_center
+            self.held_piece.row_i = _to_row_i
+            self.held_piece.col_i = _to_col_i
+            self.held_piece = None
+
+            # playing sound here
+            if _captured_piece is not None:
+                self.play_sound("capture")
+            else:
+                self.play_sound("move")
+        else:
+            self.held_piece.rect.center = get_square_center(
+                self.held_piece.row_i, self.held_piece.col_i
+            )
+            self.held_piece = None
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
