@@ -17,7 +17,7 @@ def get_eci_move(
     _from_col_i = chess_piece.col_i
     _from_sq = get_square_notation(_from_row_i, _from_col_i)
     _to_sq = get_square_notation(to_row_i, to_col_i)
-    promotion = promotion if promotion else ""
+    promotion = promotion.lower() if promotion else ""
     return _from_sq + _to_sq + promotion
 
 

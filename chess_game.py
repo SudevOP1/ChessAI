@@ -45,17 +45,71 @@ class ChessGame:
                     self.running = False
                     break
 
-                # start dragging piece
-                if (
-                    event.type == py.MOUSEBUTTONDOWN
-                    and event.button == 1
-                    and self.promotion_query is None
-                ):
-                    for _piece in self.pieces.sprites():
-                        if _piece.rect.collidepoint(event.pos):
-                            self.held_piece = _piece
-                            self.pieces.remove(self.held_piece)
-                            self.pieces.add(self.held_piece)
+                if event.type == py.MOUSEBUTTONDOWN:
+
+                    # start dragging piece
+                    if event.button == 1 and self.promotion_query is None:
+                        for _piece in self.pieces.sprites():
+                            if _piece.rect.collidepoint(event.pos):
+                                self.held_piece = _piece
+                                self.pieces.remove(self.held_piece)
+                                self.pieces.add(self.held_piece)
+
+                    # promotion query clicked
+                    if event.button == 1 and self.promotion_query is not None:
+                        _promotion_pieces = ["Q", "R", "B", "N", "q", "r", "b", "n"]
+                        for _piece_name, _btn_rect in self.promotion_query[
+                            "btns_rects"
+                        ].items():
+                            if (
+                                _btn_rect.collidepoint(event.pos)
+                                and _piece_name in _promotion_pieces
+                            ):
+                                _to_row_i = self.promotion_query["to_row_i"]
+                                _to_col_i = self.promotion_query["to_col_i"]
+                                _pawn_piece = self.promotion_query["piece"]
+                                _to_square_center = get_square_center(
+                                    _to_row_i, _to_col_i
+                                )
+
+                                _eci_move = get_eci_move(
+                                    _pawn_piece,
+                                    _to_row_i,
+                                    _to_col_i,
+                                    _piece_name,
+                                )
+                                print(_eci_move)
+
+                                self.board[_to_row_i][_to_col_i] = _piece_name
+                                _captured_piece = self.get_captured_piece(
+                                    _to_square_center
+                                )
+                                if _captured_piece is not None:
+                                    self.pieces.remove(_captured_piece)
+                                self.pieces.remove(self.held_piece)
+                                self.held_piece = None
+                                self.promotion_query = None
+
+                                self.pieces.add(
+                                    ChessPiece(
+                                        self.piece_surfs[_piece_name],
+                                        _to_col_i,
+                                        _to_row_i,
+                                        _piece_name,
+                                        center=_to_square_center,
+                                    )
+                                )
+
+                                # playing sound here
+                                self.play_sound("promotion")
+                                break
+
+                    # promotion query closed
+                    if event.button == 1 and self.promotion_query is not None:
+                        _close_btn_rect = self.promotion_query["btns_rects"]["close"]
+                        if _close_btn_rect and _close_btn_rect.collidepoint(event.pos):
+                            self.reset_held_piece()
+                            self.promotion_query = None
 
                 # drop held piece
                 if event.type == py.MOUSEBUTTONUP and event.button == 1:
@@ -203,7 +257,9 @@ class ChessGame:
         )
 
     def draw_pieces(self) -> None:
-        self.pieces.draw(self.window)
+        for sprite in self.pieces.sprites():
+            if self.promotion_query is None or sprite is not self.held_piece:
+                self.window.blit(sprite.image, sprite.rect)
 
     def draw_fps(self) -> None:
         _fps = int(self.clock.get_fps())
@@ -226,14 +282,22 @@ class ChessGame:
 
             for _idx, _piece in enumerate(_promotion_pieces):
                 _piece_surf = self.piece_surfs[_piece]
-                _piece_rect = _piece_surf.get_rect(
-                    center=get_square_center(_to_row_i + _reverse * _idx, _to_col_i)
-                )
+                if "btns_rects" not in self.promotion_query.keys():
+                    self.promotion_query["btns_rects"] = {}
+                if _piece not in self.promotion_query["btns_rects"].keys():
+                    self.promotion_query["btns_rects"][_piece] = _piece_surf.get_rect(
+                        center=get_square_center(_to_row_i + _reverse * _idx, _to_col_i)
+                    )
+                _piece_rect = self.promotion_query["btns_rects"][_piece]
                 py.draw.rect(self.window, PROMOTION_QUERY_BG_COLOR, _piece_rect)
                 self.window.blit(_piece_surf, _piece_rect)
 
             # close btn
-            _close_btn_rect = self.get_close_btn_rect(_to_row_i, _to_col_i, _reverse)
+            if "close" not in self.promotion_query["btns_rects"].keys():
+                self.promotion_query["btns_rects"]["close"] = self.get_close_btn_rect(
+                    _to_row_i, _to_col_i, _reverse
+                )
+            _close_btn_rect = self.promotion_query["btns_rects"]["close"]
             _close_btn_text_surf = self.font_24.render(
                 "X", True, PROMOTION_QUERY_CLOSE_BTN_COLOR
             )
@@ -265,11 +329,11 @@ class ChessGame:
                     "color_white": True if self.held_piece.name == "P" else False,
                     "to_col_i": _to_col_i,
                     "to_row_i": _to_row_i,
+                    "piece": self.held_piece,
                 }
+                return
 
-            _eci_move = get_eci_move(
-                self.held_piece, _to_row_i, _to_col_i
-            )  # TODO: promotion
+            _eci_move = get_eci_move(self.held_piece, _to_row_i, _to_col_i)
             print(_eci_move)
 
             self.board[_from_row_i][_from_col_i] = " "
@@ -290,10 +354,7 @@ class ChessGame:
             else:
                 self.play_sound("move")
         else:
-            self.held_piece.rect.center = get_square_center(
-                self.held_piece.row_i, self.held_piece.col_i
-            )
-            self.held_piece = None
+            self.reset_held_piece()
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
@@ -313,6 +374,13 @@ class ChessGame:
         _close_btn_rect.center = get_square_center(to_row_i + reverse * 4, to_col_i)
         _close_btn_rect.centery -= reverse * _close_btn_rect.height // 2
         return _close_btn_rect
+
+    def reset_held_piece(self):
+        if self.held_piece is not None:
+            self.held_piece.rect.center = get_square_center(
+                self.held_piece.row_i, self.held_piece.col_i
+            )
+            self.held_piece = None
 
 
 if __name__ == "__main__":
