@@ -20,7 +20,7 @@ class ChessGame:
         py.display.set_icon(py.image.load(WINDOW_ICON).convert_alpha())
 
         # vars
-        self.board = INIT_POS
+        # self.board
         self.clock = py.time.Clock()
         self.running = True
         self.held_piece: py.sprite.Sprite | None = None
@@ -141,7 +141,7 @@ class ChessGame:
         _pieces = py.sprite.Group()
         for _row_i in range(8):
             for _col_i in range(8):
-                _piece_name = self.board[_row_i][_col_i]
+                _piece_name = INIT_POS[_row_i][_col_i]
                 if _piece_name != " ":
                     _piece_surf = self.piece_surfs[_piece_name]
                     _pieces.add(
@@ -307,9 +307,6 @@ class ChessGame:
             _eci_move = get_eci_move(self.held_piece, _to_row_i, _to_col_i)
             print(_eci_move)
 
-            self.board[_from_row_i][_from_col_i] = " "
-            self.board[_to_row_i][_to_col_i] = self.held_piece.name
-
             _captured_piece = self.get_captured_piece(_to_square_center)
             if _captured_piece is not None:
                 self.pieces.remove(_captured_piece)
@@ -341,7 +338,6 @@ class ChessGame:
         )
         print(_eci_move)
 
-        self.board[_to_row_i][_to_col_i] = piece_name
         _captured_piece = self.get_captured_piece(_to_square_center)
         if _captured_piece is not None:
             self.pieces.remove(_captured_piece)
