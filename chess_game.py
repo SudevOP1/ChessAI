@@ -169,9 +169,9 @@ class ChessGame:
                 "move",
                 "promotion",
             ]:
-                _sound_path = SOUND_PATHS[_sound_name]
+                _sound_path = SOUNDS[_sound_name]["path"]
                 _sound = py.mixer.Sound(_sound_path)
-                # sound.set_volume(1) # TODO: set appropriate volume
+                _sound.set_volume(SOUNDS[_sound_name]["volume"])
                 _sounds[_sound_name] = _sound
             print_debug(DEBUG, f"loaded sounds")
             return _sounds

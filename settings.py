@@ -47,10 +47,10 @@ PIECE_IMG_PATHS = {
     "B": "assets/pieces/wb.png",
     "P": "assets/pieces/wp.png",
 }
-SOUND_PATHS = {
-    "capture"   : "assets/sounds/capture.mp3",
-    "castle"    : "assets/sounds/castle.mp3",
-    "check"     : "assets/sounds/check.mp3",
-    "move"      : "assets/sounds/move.mp3",
-    "promotion" : "assets/sounds/promotion.mp3",
+SOUNDS = { # TODO: set appropriate volume
+    "capture"   : { "volume": 1, "path": "assets/sounds/capture.mp3"    },
+    "castle"    : { "volume": 1, "path": "assets/sounds/castle.mp3"     },
+    "check"     : { "volume": 1, "path": "assets/sounds/check.mp3"      },
+    "move"      : { "volume": 1, "path": "assets/sounds/move.mp3"       },
+    "promotion" : { "volume": 1, "path": "assets/sounds/promotion.mp3"  },
 }
