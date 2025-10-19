@@ -20,7 +20,7 @@ class ChessGame:
         py.display.set_icon(py.image.load(WINDOW_ICON).convert_alpha())
 
         # vars
-        # self.board
+        self.board = chess.Board()
         self.clock = py.time.Clock()
         self.running = True
         self.held_piece: py.sprite.Sprite | None = None
@@ -81,7 +81,11 @@ class ChessGame:
                 if event.type == py.MOUSEBUTTONUP:
 
                     # drop held piece
-                    if event.button == 1 and self.held_piece is not None:
+                    if (
+                        event.button == 1
+                        and self.held_piece is not None
+                        and self.promotion_query is None
+                    ):
                         _mouse_x, _mouse_y = event.pos
                         self.drop_held_piece(_mouse_x, _mouse_y)
 
@@ -229,8 +233,9 @@ class ChessGame:
 
     def draw_pieces(self) -> None:
         for sprite in self.pieces.sprites():
+            sprite: ChessPiece  # typecasting
             if self.promotion_query is None or sprite is not self.held_piece:
-                self.window.blit(sprite.image, sprite.rect)
+                sprite.draw(self.window)
 
     def draw_fps(self) -> None:
         _fps = int(self.clock.get_fps())

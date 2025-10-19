@@ -14,8 +14,11 @@ class ChessPiece(py.sprite.Sprite):
         **pos,
     ):
         super().__init__(*groups)
-        self.image = surf
-        self.rect = self.image.get_rect(**pos)
+        self.surf = surf
+        self.rect = self.surf.get_rect(**pos)
         self.col_i = col_i
         self.row_i = row_i
         self.name = name
+
+    def draw(self, window: py.Surface):
+        window.blit(self.surf, self.rect)
