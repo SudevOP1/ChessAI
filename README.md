@@ -9,6 +9,7 @@ This project aims to develop a chess playing ai bot<br>
 ### 1. Clone the repo
 ```bash
 git clone https://github.com/SudevOP1/ChessAI.git
+cd ChessAI
 ```
 ### 2. Initialize venv
 ```powershell
