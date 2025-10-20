@@ -348,14 +348,12 @@ class ChessGame:
         if _uci_move not in self.available_moves:
             self.reset_held_piece()
             return
-        print_debug(DEBUG, _uci_move)
+        self.make_confirmed_move(_uci_move)
 
         _captured_piece = self.get_piece_at_square_center(_to_square_center)
         if _captured_piece is not None:
             self.pieces.remove(_captured_piece)
 
-        self.board.push_uci(_uci_move)
-        self.available_moves = [_move.uci() for _move in self.board.legal_moves]
         self.held_piece.rect.center = _to_square_center
         self.held_piece.row_i = _to_row_i
         self.held_piece.col_i = _to_col_i
@@ -381,10 +379,7 @@ class ChessGame:
         )
         if _uci_move not in self.available_moves:
             return False
-        print_debug(DEBUG, _uci_move)
-
-        self.board.push_uci(_uci_move)
-        self.available_moves = [_move.uci() for _move in self.board.legal_moves]
+        self.make_confirmed_move(_uci_move)
 
         _captured_piece = self.get_piece_at_square_center(_to_square_center)
         if _captured_piece is not None:
@@ -404,6 +399,11 @@ class ChessGame:
             )
         )
         return True
+
+    def make_confirmed_move(self, uci_move: str) -> None:
+        print_debug(DEBUG, f"move made: {uci_move}")
+        self.board.push_uci(uci_move)
+        self.available_moves = [_move.uci() for _move in self.board.legal_moves]
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()

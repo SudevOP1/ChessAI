@@ -22,7 +22,7 @@ def get_uci_move(
 # ====================== others ======================
 
 
-def print_debug(DEBUG, *args, **kwargs) -> None:
+def print_debug(DEBUG: bool, *args, **kwargs) -> None:
     if DEBUG:
         print("[DEBUG]", *args, **kwargs)
 
