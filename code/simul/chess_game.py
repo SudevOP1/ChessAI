@@ -506,7 +506,20 @@ class ChessGame:
         self.play_sound("castle")
 
     def handle_en_passant(self, _uci_move: str) -> None:
-        pass
+        _to_row_i, _to_col_i = get_index_notation(_uci_move[2:4])
+        direction = 1 if self.held_piece.name == "P" else -1
+
+        _captured_center = get_square_center(_to_row_i + direction, _to_col_i)
+        _captured_piece = self.get_piece_at_square_center(_captured_center)
+        self.pieces.remove(_captured_piece)
+
+        self.held_piece.rect.center = get_square_center(_to_row_i, _to_col_i)
+        self.held_piece.row_i = _to_row_i
+        self.held_piece.col_i = _to_col_i
+
+        self.make_confirmed_move(_uci_move)
+        self.play_sound("capture")
+        self.held_piece = None
 
     def make_confirmed_move(self, uci_move: str) -> None:
         print_debug(DEBUG, f"move made: {uci_move}")
