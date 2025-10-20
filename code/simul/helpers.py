@@ -31,7 +31,6 @@ def get_san_history(board: chess.Board) -> list[str]:
     return _san_moves
 
 
-
 # ====================== others ======================
 
 

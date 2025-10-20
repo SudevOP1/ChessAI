@@ -29,6 +29,7 @@ class ChessGame:
         self.available_moves: list[str] = [
             _move.uci() for _move in self.board.legal_moves
         ]
+        self.moves_scroll_offset = 0
 
         # load assets
         py.mixer.init()
@@ -104,6 +105,10 @@ class ChessGame:
                         _mouse_x, _mouse_y = event.pos
                         self.held_piece.rect.centerx = _mouse_x
                         self.held_piece.rect.centery = _mouse_y
+
+                # mouse scrolled
+                if event.type == py.MOUSEWHEEL:
+                    self.moves_scroll_offset += event.y * MOVES_SCROLL_SPEED
 
             # rendering game here
             self.window.fill(BG_COLOR)
@@ -323,27 +328,38 @@ class ChessGame:
 
     def draw_moves(self) -> None:
         _padding_x, _padding_y = get_window_board_padding()
-        _topleft = (
-            (8 * SQUARE_SIZE) + 2 * _padding_x,
-            _padding_y,
-        )
-        _rect = py.Rect(0, 0, MOVES_WIDTH, 8 * SQUARE_SIZE)
+        _topleft = ((8 * SQUARE_SIZE) + 2 * _padding_x, _padding_y)
+
+        self.moves_bg_surf.fill((0, 0, 0, 0))
         py.draw.rect(
             self.moves_bg_surf,
             MOVES_BG_COLOR,
-            _rect,
+            py.Rect(0, 0, MOVES_WIDTH, 8 * SQUARE_SIZE),
             border_radius=BOARD_CORNER_RADIUS,
         )
-        self.window.blit(self.moves_bg_surf, _topleft)
 
-        for _idx, _move in enumerate(get_san_history(self.board)):
+        moves = get_san_history(self.board)
+        line_height = self.font_24.get_height()
+        total_height = (len(moves) // 2 + 1) * line_height + MOVE_PADDING_Y
+        moves_surf = py.Surface((MOVES_WIDTH, total_height), py.SRCALPHA)
+
+        for _idx, _move in enumerate(moves):
             _text_surf = self.font_24.render(_move, True, MOVES_COLOR)
             _text_rect = _text_surf.get_rect()
             _text_rect.topleft = (
-                _topleft[0] + (MOVE_PADDING_X if (_idx % 2 == 0) else MOVES_WIDTH // 2),
-                _topleft[1] + MOVE_PADDING_Y + (_idx // 2) * self.font_24.get_height(),
+                MOVE_PADDING_X if _idx % 2 == 0 else MOVES_WIDTH // 2,
+                MOVE_PADDING_Y + (_idx // 2) * line_height,
             )
-            self.window.blit(_text_surf, _text_rect)
+            moves_surf.blit(_text_surf, _text_rect)
+
+        max_scroll = max(0, total_height - 8 * SQUARE_SIZE)
+        self.moves_scroll_offset = max(-max_scroll, min(0, self.moves_scroll_offset))
+        visible_rect = py.Rect(
+            0, -self.moves_scroll_offset, MOVES_WIDTH, 8 * SQUARE_SIZE
+        )
+        self.moves_bg_surf.blit(moves_surf, (0, 0), area=visible_rect)
+
+        self.window.blit(self.moves_bg_surf, _topleft)
 
     # ====================== chess handling functions ======================
 
