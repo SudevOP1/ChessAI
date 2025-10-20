@@ -345,7 +345,7 @@ class ChessGame:
             )
             self.window.blit(_text_surf, _text_rect)
 
-    # ====================== other functions ======================
+    # ====================== chess handling functions ======================
 
     def drop_held_piece(self, _mouse_x: int, _mouse_y: int) -> None:
         _square_index_ok, (_to_row_i, _to_col_i) = get_square_index(_mouse_x, _mouse_y)
@@ -377,6 +377,16 @@ class ChessGame:
         if _uci_move not in self.available_moves:
             self.reset_held_piece()
             return
+        _move_obj = chess.Move.from_uci(_uci_move)
+
+        if self.board.is_castling(_move_obj):
+            self.handle_castling(_uci_move)
+            return
+
+        if self.board.is_en_passant(_move_obj):
+            self.handle_en_passant(_uci_move)
+            return
+
         self.make_confirmed_move(_uci_move)
 
         _captured_piece = self.get_piece_at_square_center(_to_square_center)
@@ -429,12 +439,83 @@ class ChessGame:
         )
         return True
 
+    def handle_castling(self, _uci_move: str) -> None:
+        _castling_handler = {
+            "e1g1": {
+                "king_from": "e1",
+                "king_to": "g1",
+                "rook_from": "h1",
+                "rook_to": "f1",
+            },
+            "e1c1": {
+                "king_from": "e1",
+                "king_to": "c1",
+                "rook_from": "a1",
+                "rook_to": "d1",
+            },
+            "e8g8": {
+                "king_from": "e8",
+                "king_to": "g8",
+                "rook_from": "h8",
+                "rook_to": "f8",
+            },
+            "e8c8": {
+                "king_from": "e8",
+                "king_to": "c8",
+                "rook_from": "a8",
+                "rook_to": "d8",
+            },
+        }
+
+        _king_to_square = _castling_handler[_uci_move]["king_to"]
+        _rook_to_square = _castling_handler[_uci_move]["rook_to"]
+
+        _king_from_row_i, _king_from_col_i = get_index_notation(
+            _castling_handler[_uci_move]["king_from"]
+        )
+        _rook_from_row_i, _rook_from_col_i = get_index_notation(
+            _castling_handler[_uci_move]["rook_from"]
+        )
+        _king_to_row_i, _king_to_col_i = get_index_notation(_king_to_square)
+        _rook_to_row_i, _rook_to_col_i = get_index_notation(_rook_to_square)
+
+        _king_piece = next(
+            (
+                _piece
+                for _piece in self.pieces
+                if _piece.row_i == _king_from_row_i and _piece.col_i == _king_from_col_i
+            ),
+            None,
+        )
+        _rook_piece = next(
+            (
+                _piece
+                for _piece in self.pieces
+                if _piece.row_i == _rook_from_row_i and _piece.col_i == _rook_from_col_i
+            ),
+            None,
+        )
+
+        _king_piece.row_i, _king_piece.col_i = get_index_notation(_king_to_square)
+        _rook_piece.row_i, _rook_piece.col_i = get_index_notation(_rook_to_square)
+        _king_piece.rect.center = get_square_center(_king_to_row_i, _king_to_col_i)
+        _rook_piece.rect.center = get_square_center(_rook_to_row_i, _rook_to_col_i)
+        self.held_piece = None
+
+        self.make_confirmed_move(_uci_move)
+        self.play_sound("castle")
+
+    def handle_en_passant(self, _uci_move: str) -> None:
+        pass
+
     def make_confirmed_move(self, uci_move: str) -> None:
         print_debug(DEBUG, f"move made: {uci_move}")
         self.board.push_uci(uci_move)
         self.available_moves = [_move.uci() for _move in self.board.legal_moves]
         if self.board.is_game_over():
             pass
+
+    # ====================== other functions ======================
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()

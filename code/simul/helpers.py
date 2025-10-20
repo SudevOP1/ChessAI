@@ -31,6 +31,7 @@ def get_san_history(board: chess.Board) -> list[str]:
     return _san_moves
 
 
+
 # ====================== others ======================
 
 
@@ -77,7 +78,7 @@ def get_square_notation(row_i: int, col_i: int) -> str:
 
 
 def get_index_notation(square: str) -> tuple[int, int]:
-    """returns board indices (row, col) for a given uci notation"""
+    """returns board indices (row_i, col_i) for a given uci notation"""
     _col_i = ord(square[0]) - 97
     _row_i = 8 - int(square[1])
     return (_row_i, _col_i)
