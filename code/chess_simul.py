@@ -429,8 +429,3 @@ class ChessGame:
                 self.held_piece.row_i, self.held_piece.col_i
             )
             self.held_piece = None
-
-
-if __name__ == "__main__":
-    game = ChessGame()
-    game.run()
