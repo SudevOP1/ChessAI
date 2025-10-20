@@ -49,7 +49,7 @@ class ChessGame:
                     event.type == py.KEYDOWN and event.key == py.K_ESCAPE
                 ):
                     self.running = False
-                    print_debug(DEBUG, f"Saved game to '{save_game(self.board)}'")
+                    print_debug(DEBUG, f"saved game to '{save_game(self.board)}'")
                     break
 
                 # mouse pressed
@@ -175,21 +175,14 @@ class ChessGame:
     def load_sounds(self) -> dict[str, py.mixer.Sound]:
         try:
             _sounds = {}
-            for _sound_name in [
-                "capture",
-                "castle",
-                "check",
-                "move",
-                "promotion",
-            ]:
-                _sound_path = SOUNDS[_sound_name]["path"]
-                _sound = py.mixer.Sound(_sound_path)
-                _sound.set_volume(SOUNDS[_sound_name]["volume"])
-                _sounds[_sound_name] = _sound
+            for _sound_name, _sound in SOUNDS.items():
+                _sound_obj = py.mixer.Sound(_sound["path"])
+                _sound_obj.set_volume(_sound["volume"])
+                _sounds[_sound_name] = _sound_obj
             print_debug(DEBUG, f"loaded sounds")
             return _sounds
         except Exception as e:
-            print(f"failed to load sound file {_sound_path}: {e}")
+            print(f"failed to load sound file {_sound['path']}: {e}")
             exit()
 
     def load_font(self, font_size: int) -> py.font.Font:
@@ -545,7 +538,7 @@ class ChessGame:
         self.board.push_uci(uci_move)
         self.available_moves = [_move.uci() for _move in self.board.legal_moves]
         if self.board.is_game_over():
-            pass
+            self.play_sound("gameover")
 
     # ====================== other functions ======================
 
