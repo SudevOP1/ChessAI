@@ -1,5 +1,8 @@
 # virtual env
 venv/
 
+# simulated games dir
+simulated_games/
+
 __pycache__/
 tests/

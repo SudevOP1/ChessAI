@@ -1,4 +1,4 @@
-import chess
+import chess, os
 
 from simul.settings import *
 from simul.sprites import *
@@ -81,3 +81,27 @@ def get_index_notation(square: str) -> tuple[int, int]:
     _col_i = ord(square[0]) - 97
     _row_i = 8 - int(square[1])
     return (_row_i, _col_i)
+
+
+def save_game(board: chess.Board) -> str:
+    os.makedirs(SAVED_GAMES_DIRECTORY, exist_ok=True)
+
+    temp_board = chess.Board()
+    san_moves = []
+    for move in board.move_stack:
+        san_moves.append(temp_board.san(move))
+        temp_board.push(move)
+
+    file_index = 1
+    while True:
+        filename = f"game_file_{file_index}.txt"
+        filepath = os.path.join(SAVED_GAMES_DIRECTORY, filename)
+        if not os.path.exists(filepath):
+            break
+        file_index += 1
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        for move in san_moves:
+            f.write(move + "\n")
+
+    return filepath
