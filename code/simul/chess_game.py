@@ -415,7 +415,9 @@ class ChessGame:
         self.held_piece = None
 
         # playing sound here
-        if _captured_piece is not None:
+        if self.board.is_check():
+            self.play_sound("check")
+        elif _captured_piece is not None:
             self.play_sound("capture")
         else:
             self.play_sound("move")
