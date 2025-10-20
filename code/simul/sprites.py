@@ -1,6 +1,6 @@
 import pygame as py
 
-from settings import *
+from simul.settings import *
 
 
 class ChessPiece(py.sprite.Sprite):

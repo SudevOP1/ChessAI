@@ -1,7 +1,5 @@
-import chess
-
-from settings import *
-from sprites import *
+from simul.settings import *
+from simul.sprites import *
 
 
 # ====================== chess related ======================

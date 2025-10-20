@@ -1,8 +1,9 @@
 import pygame as py
+import chess
 
-from settings import *
-from sprites import *
-from helpers import *
+from simul.settings import *
+from simul.sprites import *
+from simul.helpers import *
 
 DEBUG = True
 

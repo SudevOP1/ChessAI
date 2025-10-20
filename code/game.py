@@ -1,4 +1,4 @@
-from chess_simul import ChessGame
+from simul.chess_game import ChessGame
 
 if __name__ == "__main__":
     game = ChessGame()
