@@ -1,3 +1,5 @@
+import chess
+
 from simul.settings import *
 from simul.sprites import *
 
@@ -19,6 +21,16 @@ def get_uci_move(
     return _from_sq + _to_sq + promotion
 
 
+def get_san_history(board: chess.Board) -> list[str]:
+    temp_board = chess.Board()
+    _san_moves = []
+    for _move in board.move_stack:
+        _san = temp_board.san(_move)
+        _san_moves.append(_san)
+        temp_board.push(_move)
+    return _san_moves
+
+
 # ====================== others ======================
 
 
@@ -30,7 +42,7 @@ def print_debug(DEBUG: bool, *args, **kwargs) -> None:
 def get_window_board_padding() -> tuple[int, int]:
     """tells how much empty space is around the board to keep it centered"""
     return (
-        (WINDOW_WIDTH - 8 * SQUARE_SIZE) // 2,
+        (WINDOW_WIDTH - (8 * SQUARE_SIZE) - MOVES_WIDTH) // 3,
         (WINDOW_HEIGHT - 8 * SQUARE_SIZE) // 2,
     )
 

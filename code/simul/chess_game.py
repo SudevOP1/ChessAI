@@ -21,7 +21,7 @@ class ChessGame:
         py.display.set_icon(py.image.load(WINDOW_ICON).convert_alpha())
 
         # vars
-        self.board = chess.Board(INIT_POS)
+        self.board = chess.Board() if INIT_POS == "" else chess.Board(INIT_POS)
         self.clock = py.time.Clock()
         self.running = True
         self.held_piece: ChessPiece | None = None
@@ -37,6 +37,7 @@ class ChessGame:
         self.board_surf = self.load_board_surf()
         self.piece_surfs = self.load_piece_surfs()
         self.pieces = self.load_pieces()
+        self.moves_bg_surf = self.load_moves_bg_surf()
 
     def run(self):
         while self.running:
@@ -110,6 +111,7 @@ class ChessGame:
             self.draw_board()
             self.draw_available_moves()
             self.draw_pieces()
+            self.draw_moves()
             self.draw_promotion_query()
             self.draw_fps()
 
@@ -193,6 +195,10 @@ class ChessGame:
             print(f"failed to load font {FONT_PATH}: {e}")
             exit()
 
+    def load_moves_bg_surf(self) -> py.Surface:
+        _surf = py.Surface((MOVES_WIDTH, 8 * SQUARE_SIZE), py.SRCALPHA)
+        return _surf
+
     # ====================== draw functions ======================
 
     def draw_board(self) -> None:
@@ -240,10 +246,9 @@ class ChessGame:
 
     def draw_fps(self) -> None:
         _fps = int(self.clock.get_fps())
-        _padding = 20
         _text_surf = self.font_24.render(str(_fps), True, (0, 255, 0))
         _text_rect = _text_surf.get_rect()
-        _text_rect.topright = (WINDOW_WIDTH - _padding, _padding)
+        _text_rect.topright = (WINDOW_WIDTH - FPS_PADDING, FPS_PADDING)
         self.window.blit(_text_surf, _text_rect)
 
     def draw_promotion_query(self) -> None:
@@ -315,6 +320,30 @@ class ChessGame:
                     _square_center,
                     _radius,
                 )
+
+    def draw_moves(self) -> None:
+        _padding_x, _padding_y = get_window_board_padding()
+        _topleft = (
+            (8 * SQUARE_SIZE) + 2 * _padding_x,
+            _padding_y,
+        )
+        _rect = py.Rect(0, 0, MOVES_WIDTH, 8 * SQUARE_SIZE)
+        py.draw.rect(
+            self.moves_bg_surf,
+            MOVES_BG_COLOR,
+            _rect,
+            border_radius=BOARD_CORNER_RADIUS,
+        )
+        self.window.blit(self.moves_bg_surf, _topleft)
+
+        for _idx, _move in enumerate(get_san_history(self.board)):
+            _text_surf = self.font_24.render(_move, True, MOVES_COLOR)
+            _text_rect = _text_surf.get_rect()
+            _text_rect.topleft = (
+                _topleft[0] + (MOVE_PADDING_X if (_idx % 2 == 0) else MOVES_WIDTH // 2),
+                _topleft[1] + MOVE_PADDING_Y + (_idx // 2) * self.font_24.get_height(),
+            )
+            self.window.blit(_text_surf, _text_rect)
 
     # ====================== other functions ======================
 
@@ -404,6 +433,8 @@ class ChessGame:
         print_debug(DEBUG, f"move made: {uci_move}")
         self.board.push_uci(uci_move)
         self.available_moves = [_move.uci() for _move in self.board.legal_moves]
+        if self.board.is_game_over():
+            pass
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
