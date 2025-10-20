@@ -20,11 +20,14 @@ class ChessGame:
         py.display.set_icon(py.image.load(WINDOW_ICON).convert_alpha())
 
         # vars
-        self.board = chess.Board()
+        self.board = chess.Board(INIT_POS)
         self.clock = py.time.Clock()
         self.running = True
-        self.held_piece: py.sprite.Sprite | None = None
+        self.held_piece: ChessPiece | None = None
         self.promotion_query: dict | None = None
+        self.available_moves: list[str] = [
+            _move.uci() for _move in self.board.legal_moves
+        ]
 
         # load assets
         py.mixer.init()
@@ -53,8 +56,10 @@ class ChessGame:
                         for _piece in self.pieces.sprites():
                             if _piece.rect.collidepoint(event.pos):
                                 self.held_piece = _piece
-                                self.pieces.remove(self.held_piece)
-                                self.pieces.add(self.held_piece)
+                                # put held piece at the end of self.pieces to render on top of other pieces
+                                self.pieces.remove(_piece)
+                                self.pieces.add(_piece)
+                                break
 
                     # promotion query clicked
                     if event.button == 1 and self.promotion_query is not None:
@@ -66,9 +71,9 @@ class ChessGame:
                                 _btn_rect.collidepoint(event.pos)
                                 and _piece_name in _promotion_pieces
                             ):
-                                self.promote(_piece_name)
-                                self.play_sound("promotion")
-                                break
+                                promotion_ok = self.handle_promotion(_piece_name)
+                                if promotion_ok:
+                                    break
 
                     # promotion query closed
                     if event.button == 1 and self.promotion_query is not None:
@@ -102,6 +107,7 @@ class ChessGame:
             self.window.fill(BG_COLOR)
 
             self.draw_board()
+            self.draw_available_moves()
             self.draw_pieces()
             self.draw_promotion_query()
             self.draw_fps()
@@ -116,20 +122,7 @@ class ChessGame:
     def load_piece_surfs(self) -> dict[str, py.Surface]:
         try:
             _piece_surfs = {}
-            for _piece_name in [
-                "k",
-                "q",
-                "r",
-                "n",
-                "b",
-                "p",
-                "K",
-                "Q",
-                "R",
-                "N",
-                "B",
-                "P",
-            ]:
+            for _piece_name in PIECE_NAMES:
                 _piece_path = PIECE_IMG_PATHS[_piece_name]
                 _piece_surf = py.image.load(_piece_path).convert_alpha()
                 _piece_surfs[_piece_name] = py.transform.smoothscale(
@@ -143,9 +136,16 @@ class ChessGame:
 
     def load_pieces(self) -> py.sprite.Group:
         _pieces = py.sprite.Group()
+        _board_matrix = [
+            [
+                str(self.board.piece_at(chess.square(file, 7 - rank)) or " ")
+                for file in range(8)
+            ]
+            for rank in range(8)
+        ]
         for _row_i in range(8):
             for _col_i in range(8):
-                _piece_name = INIT_POS[_row_i][_col_i]
+                _piece_name = _board_matrix[_row_i][_col_i]
                 if _piece_name != " ":
                     _piece_surf = self.piece_surfs[_piece_name]
                     _pieces.add(
@@ -287,6 +287,34 @@ class ChessGame:
                 _close_btn_text_surf.get_rect(center=_close_btn_rect.center),
             )
 
+    def draw_available_moves(self) -> None:
+        if self.held_piece is None:
+            return
+        for _move in self.available_moves:
+            _from_square_notation = _move[0:2]
+            if _from_square_notation == get_square_notation(
+                self.held_piece.row_i, self.held_piece.col_i
+            ):
+                _to_square_notation = _move[2:4]
+                _to_row_i, _to_col_i = get_index_notation(_to_square_notation)
+                _square_center = get_square_center(_to_row_i, _to_col_i)
+                _color = (
+                    AVAILABLE_MOVES_INDICATOR_COLOR
+                    if self.get_piece_at_square_center(_square_center) is None
+                    else AVAILABLE_MOVES_CAPTURE_INDICATOR_COLOR
+                )
+                _radius = (
+                    AVAILABLE_MOVES_INDICATOR_RADIUS
+                    if self.get_piece_at_square_center(_square_center) is None
+                    else AVAILABLE_MOVES_CAPTURE_INDICATOR_RADIUS
+                )
+                py.draw.circle(
+                    self.window,
+                    _color,
+                    _square_center,
+                    _radius,
+                )
+
     # ====================== other functions ======================
 
     def drop_held_piece(self, _mouse_x: int, _mouse_y: int) -> None:
@@ -294,62 +322,77 @@ class ChessGame:
         _to_square_center = get_square_center(_to_row_i, _to_col_i)
         _from_row_i = self.held_piece.row_i
         _from_col_i = self.held_piece.col_i
-        if _square_index_ok and not (
-            _from_col_i == _to_col_i and _from_row_i == _to_row_i
+        if not (
+            _square_index_ok
+            and not (_from_col_i == _to_col_i and _from_row_i == _to_row_i)
         ):
-            # handling promotion
-            if (self.held_piece.name == "P" and _to_row_i == 0) or (
-                self.held_piece.name == "p" and _to_row_i == 7
-            ):
-                self.promotion_query = {
-                    "color_white": True if self.held_piece.name == "P" else False,
-                    "to_col_i": _to_col_i,
-                    "to_row_i": _to_row_i,
-                    "piece": self.held_piece,
-                }
-                return
-
-            _eci_move = get_eci_move(self.held_piece, _to_row_i, _to_col_i)
-            print(_eci_move)
-
-            _captured_piece = self.get_captured_piece(_to_square_center)
-            if _captured_piece is not None:
-                self.pieces.remove(_captured_piece)
-
-            self.held_piece.rect.center = _to_square_center
-            self.held_piece.row_i = _to_row_i
-            self.held_piece.col_i = _to_col_i
-            self.held_piece = None
-
-            # playing sound here
-            if _captured_piece is not None:
-                self.play_sound("capture")
-            else:
-                self.play_sound("move")
-        else:
             self.reset_held_piece()
+            return
 
-    def promote(self, piece_name: str) -> None:
+        # handling promotion
+        if (self.held_piece.name == "P" and _to_row_i == 0 and self.board.turn) or (
+            self.held_piece.name == "p" and _to_row_i == 7 and not self.board.turn
+        ):
+            for _move in self.available_moves:
+                if len(_move) == 5:
+                    self.promotion_query = {
+                        "color_white": True if self.held_piece.name == "P" else False,
+                        "to_col_i": _to_col_i,
+                        "to_row_i": _to_row_i,
+                        "piece": self.held_piece,
+                    }
+                    return
+
+        _uci_move = get_uci_move(self.held_piece, _to_row_i, _to_col_i)
+        if _uci_move not in self.available_moves:
+            self.reset_held_piece()
+            return
+        print_debug(DEBUG, _uci_move)
+
+        _captured_piece = self.get_piece_at_square_center(_to_square_center)
+        if _captured_piece is not None:
+            self.pieces.remove(_captured_piece)
+
+        self.board.push_uci(_uci_move)
+        self.available_moves = [_move.uci() for _move in self.board.legal_moves]
+        self.held_piece.rect.center = _to_square_center
+        self.held_piece.row_i = _to_row_i
+        self.held_piece.col_i = _to_col_i
+        self.held_piece = None
+
+        # playing sound here
+        if _captured_piece is not None:
+            self.play_sound("capture")
+        else:
+            self.play_sound("move")
+
+    def handle_promotion(self, piece_name: str) -> bool:
         _to_row_i = self.promotion_query["to_row_i"]
         _to_col_i = self.promotion_query["to_col_i"]
         _pawn_piece = self.promotion_query["piece"]
         _to_square_center = get_square_center(_to_row_i, _to_col_i)
 
-        _eci_move = get_eci_move(
+        _uci_move = get_uci_move(
             _pawn_piece,
             _to_row_i,
             _to_col_i,
             piece_name,
         )
-        print(_eci_move)
+        if _uci_move not in self.available_moves:
+            return False
+        print_debug(DEBUG, _uci_move)
 
-        _captured_piece = self.get_captured_piece(_to_square_center)
+        self.board.push_uci(_uci_move)
+        self.available_moves = [_move.uci() for _move in self.board.legal_moves]
+
+        _captured_piece = self.get_piece_at_square_center(_to_square_center)
         if _captured_piece is not None:
             self.pieces.remove(_captured_piece)
         self.pieces.remove(self.held_piece)
         self.held_piece = None
         self.promotion_query = None
 
+        self.play_sound("promotion")
         self.pieces.add(
             ChessPiece(
                 self.piece_surfs[piece_name],
@@ -359,11 +402,12 @@ class ChessGame:
                 center=_to_square_center,
             )
         )
+        return True
 
     def play_sound(self, sound_name: str) -> None:
         self.sounds[sound_name].play()
 
-    def get_captured_piece(
+    def get_piece_at_square_center(
         self, to_square_center: tuple[int, int]
     ) -> ChessPiece | None:
         for _piece in self.pieces.sprites():

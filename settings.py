@@ -8,29 +8,31 @@ GAME_FPS = 60
 SQUARE_SIZE = 80
 BOARD_CORNER_RADIUS = 20
 PROMOTION_QUERY_CLOSE_BTN_HEIGHT = SQUARE_SIZE * 0.5
+AVAILABLE_MOVES_INDICATOR_RADIUS = SQUARE_SIZE * 0.1
+AVAILABLE_MOVES_CAPTURE_INDICATOR_RADIUS = SQUARE_SIZE * 0.3
 
-
-INIT_POS = [
-    ["r", "n", "b", "q", "k", "b", "n", "r"],
-    ["p", "p", "p", "p", "p", "p", "p", "p"],
-    [" ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " "],
-    ["P", "P", "P", "P", "P", "P", "P", "P"],
-    ["R", "N", "B", "Q", "K", "B", "N", "R"],
+INIT_POS = "rnbqkbnr/pppppppp/8/8/8/2Q5/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+PIECE_NAMES = [
+    "K", "k",
+    "Q", "q",
+    "R", "r",
+    "N", "n",
+    "B", "b",
+    "P", "p",
 ]
 
 
 BG_COLOR = "#00082A"
-PROMOTION_QUERY_BG_COLOR = "#ffffff"
-PROMOTION_QUERY_CLOSE_BTN_BG_COLOR = "#c8c8c8"
-PROMOTION_QUERY_CLOSE_BTN_COLOR = "#000000"
 THEMES = {
     "ocean" : ["#7397AC", "#D4DFE5"],
     "neo"   : ["#739552", "#ebecd0"],
 }
 THEME = "ocean"
+PROMOTION_QUERY_BG_COLOR                = "#ffffff"
+PROMOTION_QUERY_CLOSE_BTN_BG_COLOR      = "#c8c8c8"
+PROMOTION_QUERY_CLOSE_BTN_COLOR         = "#000000"
+AVAILABLE_MOVES_INDICATOR_COLOR         = "#ffffff"
+AVAILABLE_MOVES_CAPTURE_INDICATOR_COLOR = "#ff0000"
 
 FONT_PATH = "assets/GoogleSansCode.ttf"  # (monospace)
 PIECE_IMG_PATHS = {

@@ -7,7 +7,7 @@ from sprites import *
 # ====================== chess related ======================
 
 
-def get_eci_move(
+def get_uci_move(
     chess_piece: ChessPiece,
     to_row_i: int,
     to_col_i: int,
@@ -62,10 +62,12 @@ def get_square_index(x: int, y: int) -> tuple[bool, tuple[int, int]]:
 
 
 def get_square_notation(row_i: int, col_i: int) -> str:
+    """returns uci notation (e.g., 'e4') for a given board index"""
     return chr(col_i + 97) + str(8 - row_i)
 
 
 def get_index_notation(square: str) -> tuple[int, int]:
+    """returns board indices (row, col) for a given uci notation"""
     _col_i = ord(square[0]) - 97
     _row_i = 8 - int(square[1])
     return (_row_i, _col_i)
