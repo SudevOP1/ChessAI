@@ -1,9 +1,18 @@
+from typing import Callable
+
+from bots.random_bot import generate_random_move
+
 WINDOW_NAME = "chess"
 WINDOW_ICON = "assets/pieces/wn.png"
 SAVED_GAMES_DIRECTORY = "simulated_games"
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 GAME_FPS = 60
+
+PLAYER_OPTIONS: dict[str, Callable | None] = {
+    "player": None,
+    "random": generate_random_move,
+}
 
 SQUARE_SIZE         = 80
 BOARD_CORNER_RADIUS = 20

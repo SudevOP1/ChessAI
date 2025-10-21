@@ -1,5 +1,6 @@
 import pygame as py
 import chess, os
+from typing import Callable
 
 from simul.settings import *
 from simul.sprites import *
@@ -12,7 +13,9 @@ class ChessGame:
 
     # ====================== main functions ======================
 
-    def __init__(self):
+    def __init__(self, white: Callable | None = None, black: Callable | None = None):
+        if white not in PLAYER_OPTIONS.values() or black not in PLAYER_OPTIONS.values():
+            raise Exception("invalid player option encountered")
 
         # window setup
         py.init()
@@ -30,6 +33,8 @@ class ChessGame:
             _move.uci() for _move in self.board.legal_moves
         ]
         self.moves_scroll_offset = 0
+        self.white = white
+        self.black = black
 
         # load assets
         py.mixer.init()
@@ -57,13 +62,16 @@ class ChessGame:
 
                     # start dragging piece
                     if event.button == 1 and self.promotion_query is None:
-                        for _piece in self.pieces.sprites():
-                            if _piece.rect.collidepoint(event.pos):
-                                self.held_piece = _piece
-                                # put held piece at the end of self.pieces to render on top of other pieces
-                                self.pieces.remove(_piece)
-                                self.pieces.add(_piece)
-                                break
+                        if (self.board.turn == chess.WHITE and self.white is None) or (
+                            self.board.turn == chess.BLACK and self.black is None
+                        ):
+                            for _piece in self.pieces.sprites():
+                                if _piece.rect.collidepoint(event.pos):
+                                    self.held_piece = _piece
+                                    # put held piece at the end of self.pieces to render on top of other pieces
+                                    self.pieces.remove(_piece)
+                                    self.pieces.add(_piece)
+                                    break
 
                     # promotion query clicked
                     if event.button == 1 and self.promotion_query is not None:
@@ -113,6 +121,8 @@ class ChessGame:
 
             # rendering game here
             self.window.fill(BG_COLOR)
+
+            self.make_bot_move()
 
             self.draw_board()
             self.draw_available_moves()
@@ -408,14 +418,6 @@ class ChessGame:
         self.held_piece.col_i = _to_col_i
         self.held_piece = None
 
-        # playing sound here
-        if self.board.is_check():
-            self.play_sound("check")
-        elif _captured_piece is not None:
-            self.play_sound("capture")
-        else:
-            self.play_sound("move")
-
     def handle_promotion(self, piece_name: str) -> bool:
         _to_row_i = self.promotion_query["to_row_i"]
         _to_col_i = self.promotion_query["to_col_i"]
@@ -439,7 +441,6 @@ class ChessGame:
         self.held_piece = None
         self.promotion_query = None
 
-        self.play_sound("promotion")
         self.pieces.add(
             ChessPiece(
                 self.piece_surfs[piece_name],
@@ -451,7 +452,9 @@ class ChessGame:
         )
         return True
 
-    def handle_castling(self, _uci_move: str) -> None:
+    def handle_castling(
+        self, _uci_move: str, move_debug_msg: str = "move made"
+    ) -> None:
         _castling_handler = {
             "e1g1": {
                 "king_from": "e1",
@@ -514,31 +517,115 @@ class ChessGame:
         _rook_piece.rect.center = get_square_center(_rook_to_row_i, _rook_to_col_i)
         self.held_piece = None
 
-        self.make_confirmed_move(_uci_move)
-        self.play_sound("castle")
+        self.make_confirmed_move(_uci_move, move_debug_msg)
 
-    def handle_en_passant(self, _uci_move: str) -> None:
+    def handle_en_passant(
+        self, _uci_move: str, move_debug_msg: str = "move made"
+    ) -> None:
         _to_row_i, _to_col_i = get_index_notation(_uci_move[2:4])
-        direction = 1 if self.held_piece.name == "P" else -1
+        direction = 1 if self.board.turn == chess.WHITE else -1
 
         _captured_center = get_square_center(_to_row_i + direction, _to_col_i)
         _captured_piece = self.get_piece_at_square_center(_captured_center)
         self.pieces.remove(_captured_piece)
 
-        self.held_piece.rect.center = get_square_center(_to_row_i, _to_col_i)
-        self.held_piece.row_i = _to_row_i
-        self.held_piece.col_i = _to_col_i
+        if self.held_piece is not None:
+            self.held_piece.rect.center = get_square_center(_to_row_i, _to_col_i)
+            self.held_piece.row_i = _to_row_i
+            self.held_piece.col_i = _to_col_i
 
-        self.make_confirmed_move(_uci_move)
-        self.play_sound("capture")
+        self.make_confirmed_move(_uci_move, move_debug_msg=move_debug_msg)
         self.held_piece = None
 
-    def make_confirmed_move(self, uci_move: str) -> None:
-        print_debug(DEBUG, f"move made: {uci_move}")
+    def make_confirmed_move(
+        self,
+        uci_move: str,
+        move_debug_msg: str = "move made",
+    ) -> None:
+        _move_obj = chess.Move.from_uci(uci_move)
+        _promotion = len(uci_move) == 5
+        _castle = self.board.is_castling(_move_obj)
+        _capture = (self.board.is_capture(_move_obj)) or (
+            self.board.is_en_passant(_move_obj)
+        )
+
         self.board.push_uci(uci_move)
         self.available_moves = [_move.uci() for _move in self.board.legal_moves]
+        print_debug(DEBUG, f"{move_debug_msg}: {uci_move}")
+
         if self.board.is_game_over():
             self.play_sound("gameover")
+        elif self.board.is_check():
+            self.play_sound("check")
+        elif _promotion:
+            self.play_sound("promotion")
+        elif _castle:
+            self.play_sound("castle")
+        elif _capture:
+            self.play_sound("capture")
+        else:
+            self.play_sound("move")
+
+    def make_bot_move(self) -> None:
+        if not self.board.is_game_over() and (
+            (self.board.turn == chess.WHITE and self.white is not None)
+            or (self.board.turn == chess.BLACK and self.black is not None)
+        ):
+            _move_generator = (
+                self.white if self.board.turn == chess.WHITE else self.black
+            )
+            _uci_move = _move_generator(self.board)
+            _move_obj = chess.Move.from_uci(_uci_move)
+
+            _from_square, _to_square = _uci_move[0:2], _uci_move[2:4]
+            _from_row_i, _from_col_i = get_index_notation(_from_square)
+            _to_row_i, _to_col_i = get_index_notation(_to_square)
+            _piece = next(
+                (
+                    _piece
+                    for _piece in self.pieces
+                    if _piece.row_i == _from_row_i and _piece.col_i == _from_col_i
+                ),
+                None,
+            )
+
+            # promotion
+            if len(_uci_move) == 5:
+                _promoted_piece_name = _uci_move[4]
+                self.pieces.remove(_piece)
+                self.pieces.add(
+                    ChessPiece(
+                        self.piece_surfs[_promoted_piece_name],
+                        col_i=_to_col_i,
+                        row_i=_to_row_i,
+                        name=_promoted_piece_name,
+                    )
+                )
+                self.make_confirmed_move(_uci_move, move_debug_msg="bot move")
+                return
+
+            # castling
+            if self.board.is_castling(_move_obj):
+                self.handle_castling(_uci_move, move_debug_msg="bot move")
+                return
+
+            # en passant
+            if self.board.is_en_passant(_move_obj):
+                self.handle_en_passant(_uci_move, move_debug_msg="bot move")
+                return
+
+            # capture move
+            _captured_piece = self.get_piece_at_square_center(
+                get_square_center(_to_row_i, _to_col_i)
+            )
+            if _captured_piece is not None:
+                self.pieces.remove(_captured_piece)
+
+            # normal move
+            _piece.rect.center = get_square_center(_to_row_i, _to_col_i)
+            _piece.col_i = _to_col_i
+            _piece.row_i = _to_row_i
+            self.make_confirmed_move(_uci_move, move_debug_msg="bot move")
 
     # ====================== other functions ======================
 

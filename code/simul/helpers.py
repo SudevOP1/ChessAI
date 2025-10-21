@@ -94,7 +94,7 @@ def save_game(board: chess.Board) -> str:
 
     file_index = 1
     while True:
-        filename = f"game_file_{file_index}.txt"
+        filename = f"game_{file_index}.txt"
         filepath = os.path.join(SAVED_GAMES_DIRECTORY, filename)
         if not os.path.exists(filepath):
             break
