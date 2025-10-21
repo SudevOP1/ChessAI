@@ -33,10 +33,20 @@ def get_san_history(board: chess.Board) -> list[str]:
 
 # ====================== others ======================
 
+print_colors = {
+    "red": "\033[91m",
+    "green": "\033[92m",
+    "yellow": "\033[93m",
+    "dark": "\033[90m",
+    "clear": "\033[00m",
+}
 
-def print_debug(DEBUG: bool, *args, **kwargs) -> None:
+
+def print_debug(DEBUG: bool, *args, color: str = "dark", **kwargs) -> None:
     if DEBUG:
-        print("[DEBUG]", *args, **kwargs)
+        color_code = print_colors.get(color, "")
+        clear_code = print_colors["clear"]
+        print(f"{color_code}[DEBUG]", *args, clear_code, **kwargs)
 
 
 def get_window_board_padding() -> tuple[int, int]:

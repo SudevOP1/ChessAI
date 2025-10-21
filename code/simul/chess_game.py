@@ -54,7 +54,12 @@ class ChessGame:
                     event.type == py.KEYDOWN and event.key == py.K_ESCAPE
                 ):
                     self.running = False
-                    print_debug(DEBUG, f"saved game to '{save_game(self.board)}'")
+                    print()
+                    print_debug(
+                        DEBUG,
+                        f"saved game to '{save_game(self.board)}'",
+                        color="green",
+                    )
                     break
 
                 # mouse pressed
