@@ -604,6 +604,7 @@ class ChessGame:
                         col_i=_to_col_i,
                         row_i=_to_row_i,
                         name=_promoted_piece_name,
+                        center=get_square_center(_to_row_i, _to_col_i),
                     )
                 )
                 self.make_confirmed_move(_uci_move, move_debug_msg="bot move")
