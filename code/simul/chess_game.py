@@ -44,6 +44,7 @@ class ChessGame:
         self.piece_surfs = self.load_piece_surfs()
         self.pieces = self.load_pieces()
         self.moves_bg_surf = self.load_moves_bg_surf()
+        print()
 
     def run(self):
         while self.running:
@@ -152,10 +153,10 @@ class ChessGame:
                 _piece_surfs[_piece_name] = py.transform.smoothscale(
                     _piece_surf, (SQUARE_SIZE, SQUARE_SIZE)
                 )
-            print_debug(DEBUG, f"loaded piece imgs")
+            print_debug(DEBUG, f"loaded piece imgs", color="green")
             return _piece_surfs
         except Exception as e:
-            print(f"failed to load piece img {_piece_path}: {e}")
+            print(f"failed to load piece img {_piece_path}: {e}", color="red")
             exit()
 
     def load_pieces(self) -> py.sprite.Group:
@@ -194,19 +195,19 @@ class ChessGame:
                 _sound_obj = py.mixer.Sound(_sound["path"])
                 _sound_obj.set_volume(_sound["volume"])
                 _sounds[_sound_name] = _sound_obj
-            print_debug(DEBUG, f"loaded sounds")
+            print_debug(DEBUG, f"loaded sounds", color="green")
             return _sounds
         except Exception as e:
-            print(f"failed to load sound file {_sound['path']}: {e}")
+            print(f"failed to load sound file {_sound['path']}: {e}", color="red")
             exit()
 
     def load_font(self, font_size: int) -> py.font.Font:
         try:
             _font = py.font.Font(FONT_PATH, font_size)
-            print_debug(DEBUG, f"loaded font")
+            print_debug(DEBUG, f"loaded font", color="green")
             return _font
         except Exception as e:
-            print(f"failed to load font {FONT_PATH}: {e}")
+            print(f"failed to load font {FONT_PATH}: {e}", color="red")
             exit()
 
     def load_moves_bg_surf(self) -> py.Surface:
