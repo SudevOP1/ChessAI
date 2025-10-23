@@ -1,8 +1,8 @@
 from typing import Callable
 
-from bots.bot_random import bot_random
-from bots.bot_classic_depth import bot_classic_depth
-from bots.bot_alpha_beta import bot_alpha_beta
+from code.bots.bot1_random          import bot_random
+from code.bots.bot2_classic_depth   import bot_classic_depth
+from code.bots.bot3_alpha_beta      import bot_alpha_beta
 
 WINDOW_NAME = "chess"
 WINDOW_ICON = "assets/pieces/wn.png"
