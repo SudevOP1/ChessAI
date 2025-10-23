@@ -1,5 +1,7 @@
 import chess
 
+from code.bots.common import *
+
 POS_INF = 10**7
 NEG_INF = -POS_INF
 
@@ -44,20 +46,3 @@ def search(
         alpha = max(alpha, _eval)
 
     return alpha
-
-
-def get_eval(board: chess.Board) -> int:
-    _piece_values = {
-        chess.PAWN: 100,
-        chess.KNIGHT: 300,
-        chess.BISHOP: 300,
-        chess.ROOK: 500,
-        chess.QUEEN: 900,
-        chess.KING: 0,
-    }
-
-    _value = 0
-    for _piece in _piece_values.keys():
-        _value += len(board.pieces(_piece, chess.WHITE)) * _piece_values[_piece]
-        _value -= len(board.pieces(_piece, chess.BLACK)) * _piece_values[_piece]
-    return _value if board.turn == chess.WHITE else -_value
