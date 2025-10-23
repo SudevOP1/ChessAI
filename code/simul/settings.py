@@ -1,6 +1,8 @@
 from typing import Callable
 
-from bots.random_bot import generate_random_move
+from bots.bot_random import bot_random
+from bots.bot_classic_depth import bot_classic_depth
+from bots.bot_alpha_beta import bot_alpha_beta
 
 WINDOW_NAME = "chess"
 WINDOW_ICON = "assets/pieces/wn.png"
@@ -11,7 +13,9 @@ GAME_FPS = 60
 
 PLAYER_OPTIONS: dict[str, Callable | None] = {
     "player": None,
-    "random": generate_random_move,
+    "random": bot_random,
+    "classic_depth": bot_classic_depth,
+    "alpha_beta": bot_alpha_beta,
 }
 
 SQUARE_SIZE         = 80

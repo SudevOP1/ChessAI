@@ -61,6 +61,7 @@ class ChessGame:
                         f"saved game to '{save_game(self.board)}'",
                         color="green",
                     )
+                    print()
                     break
 
                 # mouse pressed
@@ -546,7 +547,7 @@ class ChessGame:
     def make_confirmed_move(
         self,
         uci_move: str,
-        move_debug_msg: str = "move made",
+        move_debug_msg: str = "player move",
     ) -> None:
         _move_obj = chess.Move.from_uci(uci_move)
         _promotion = len(uci_move) == 5
@@ -608,17 +609,17 @@ class ChessGame:
                         center=get_square_center(_to_row_i, _to_col_i),
                     )
                 )
-                self.make_confirmed_move(_uci_move, move_debug_msg="bot move")
+                self.make_confirmed_move(_uci_move, move_debug_msg="bot move   ")
                 return
 
             # castling
             if self.board.is_castling(_move_obj):
-                self.handle_castling(_uci_move, move_debug_msg="bot move")
+                self.handle_castling(_uci_move, move_debug_msg="bot move   ")
                 return
 
             # en passant
             if self.board.is_en_passant(_move_obj):
-                self.handle_en_passant(_uci_move, move_debug_msg="bot move")
+                self.handle_en_passant(_uci_move, move_debug_msg="bot move   ")
                 return
 
             # capture move
@@ -632,7 +633,7 @@ class ChessGame:
             _piece.rect.center = get_square_center(_to_row_i, _to_col_i)
             _piece.col_i = _to_col_i
             _piece.row_i = _to_row_i
-            self.make_confirmed_move(_uci_move, move_debug_msg="bot move")
+            self.make_confirmed_move(_uci_move, move_debug_msg="bot move   ")
 
     # ====================== other functions ======================
 
