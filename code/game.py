@@ -1,8 +1,8 @@
 from typing import Callable
 
-from simul.chess_game import ChessGame
-from simul.settings import PLAYER_OPTIONS
-from simul.helpers import print_colors
+from code.simul.chess_game import ChessGame
+from code.simul.settings import PLAYER_OPTIONS
+from code.simul.helpers import print_colors
 
 
 def set_printing_color(color: str) -> None:

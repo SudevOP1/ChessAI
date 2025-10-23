@@ -1,7 +1,7 @@
 import chess, os
 
-from simul.settings import *
-from simul.sprites import *
+from code.simul.settings import *
+from code.simul.sprites import *
 
 
 # ====================== chess related ======================

@@ -2,9 +2,9 @@ import pygame as py
 import chess, os
 from typing import Callable
 
-from simul.settings import *
-from simul.sprites import *
-from simul.helpers import *
+from code.simul.settings import *
+from code.simul.sprites import *
+from code.simul.helpers import *
 
 DEBUG = True
 

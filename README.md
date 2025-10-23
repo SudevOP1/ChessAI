@@ -22,6 +22,6 @@ pip install -r requirements.txt
 ```
 ### 4. Run code
 ```powershell
-python code/game.py
+python -m code.game
 ```
 <br>
