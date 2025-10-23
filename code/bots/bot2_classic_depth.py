@@ -2,11 +2,12 @@ import chess
 
 from code.bots.common import *
 
-POS_INF = 10**7
-NEG_INF = -POS_INF
-
 
 def bot_classic_depth(board: chess.Board, depth: int = 3) -> str:
+    """
+    chooses the best move by evaluating all legal moves up to a given depth using a minimax search
+    returns the best move in uci string
+    """
     _best_move: chess.Move | None = None
     _best_move_eval = NEG_INF
 
@@ -22,6 +23,11 @@ def bot_classic_depth(board: chess.Board, depth: int = 3) -> str:
 
 
 def search(board: chess.Board, depth: int) -> int:
+    """
+    performs a depth-limited negamax search to evaluate all possible moves
+    from the current board position and returns the best evaluation score
+    from the perspective of the current player
+    """
 
     if depth == 0:
         return get_eval(board)
@@ -33,7 +39,7 @@ def search(board: chess.Board, depth: int) -> int:
         return 0
 
     _best_eval = NEG_INF
-    for _move_obj in board.legal_moves:
+    for _move_obj in list(board.legal_moves):
         _temp_board = board.copy()
         _temp_board.push(_move_obj)
         _best_eval = max(_best_eval, -search(_temp_board, depth - 1))

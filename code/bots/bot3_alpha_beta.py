@@ -2,11 +2,12 @@ import chess
 
 from code.bots.common import *
 
-POS_INF = 10**7
-NEG_INF = -POS_INF
-
 
 def bot_alpha_beta(board: chess.Board, depth: int = 3) -> str:
+    """
+    chooses the best move for the current player using a depth-limited minimax search with alpha-beta pruning
+    returns the selected move in uci string
+    """
     _best_move: chess.Move | None = None
     _best_move_eval = NEG_INF
 
@@ -27,6 +28,10 @@ def search(
     alpha: int = NEG_INF,
     beta: int = POS_INF,
 ) -> int:
+    """
+    recursively evaluates the board using negamax with alpha-beta pruning
+    returns the best evaluation score from the perspective of the current player
+    """
 
     if depth == 0:
         return get_eval(board)
@@ -37,7 +42,7 @@ def search(
             return NEG_INF
         return 0
 
-    for _move_obj in board.legal_moves:
+    for _move_obj in list(board.legal_moves):
         _temp_board = board.copy()
         _temp_board.push(_move_obj)
         _eval = -search(_temp_board, depth - 1, -beta, -alpha)

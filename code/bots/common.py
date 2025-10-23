@@ -1,6 +1,9 @@
 import chess
 
 
+POS_INF = 10**7
+NEG_INF = -POS_INF
+
 piece_values = {
     chess.PAWN: 100,
     chess.KNIGHT: 300,
@@ -11,10 +14,18 @@ piece_values = {
 }
 
 
-def get_piece_value(piece: chess.Piece) -> int:
-    if piece not in piece_values.keys():
-        raise Exception(f"encountered invalid piece: {piece}")
-    return piece_values[piece]
+def get_piece_value(piece: chess.Piece | int | str) -> int:
+
+    if isinstance(piece, str):
+        return piece_values[chess.Piece.from_symbol(piece).piece_type]
+
+    if isinstance(piece, chess.Piece):
+        return piece_values[piece.piece_type]
+
+    if isinstance(piece, int) and piece in piece_values:
+        return piece_values[piece]
+
+    raise Exception(f"encountered invalid piece: {type(piece)} {piece}")
 
 
 def get_eval(board: chess.Board) -> int:
