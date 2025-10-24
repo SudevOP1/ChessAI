@@ -2,20 +2,37 @@ import chess
 
 from code.bots.common import *
 
+"""
+key     = fen
+value   = (depth, score, best_move, flag)
+flag    ∈ {'EXACT', 'LOWER', 'UPPER'}
+"""
+transposition_table: dict[str, tuple[int, int, str, str]] = {}
 
-def bot_move_ordering(board: chess.Board, depth: int = 3) -> str:
+
+def bot_pos_caching(board: chess.Board, depth: int = 5) -> str:
+    _best_move, _ = search_root(board, depth)
+    return _best_move.uci()
+
+
+def search_root(board: chess.Board, depth: int = 3) -> tuple[chess.Move, int]:
+    """returns both move_obj and evaluation"""
     _best_move: chess.Move | None = None
-    _best_move_eval = NEG_INF
+    _best_eval = NEG_INF
+    _alpha = NEG_INF
+    _beta = POS_INF
 
     for _move in get_ordered_moves(board):
         _temp_board = board.copy()
         _temp_board.push(_move)
-        _eval = -search(_temp_board, depth)
-        if _best_move is None or _best_move_eval < _eval:
-            _best_move = _move
-            _best_move_eval = _eval
+        _eval = -search(_temp_board, depth - 1, -_beta, -_alpha)
 
-    return _best_move.uci()
+        if _best_move is None or _best_eval < _eval:
+            _best_move = _move
+            _best_eval = _eval
+        _alpha = max(_alpha, _eval)
+
+    return _best_move, _best_eval
 
 
 def search(
@@ -24,25 +41,57 @@ def search(
     alpha: int = NEG_INF,
     beta: int = POS_INF,
 ) -> int:
+    _og_alpha = alpha
+    _fen = board.fen()
+
+    if _fen in transposition_table:
+        (
+            _cached_depth,
+            _cached_score,
+            _cached_move,
+            _cached_flag,
+        ) = transposition_table[_fen]
+        if _cached_depth >= depth:
+
+            if _cached_flag == "EXACT":
+                return _cached_score
+            elif _cached_flag == "LOWER":
+                alpha = max(alpha, _cached_score)
+            elif _cached_flag == "UPPER":
+                beta = min(beta, _cached_score)
+
+            if alpha >= beta:
+                return _cached_score
 
     if depth == 0:
         return get_eval(board)
 
-    # checkmate or draw
     if board.is_game_over():
         if board.is_checkmate():
             return NEG_INF
         return 0
 
+    _best_score = NEG_INF
+    _best_move = None
+
     for _move_obj in get_ordered_moves(board):
         _temp_board = board.copy()
         _temp_board.push(_move_obj)
         _eval = -search(_temp_board, depth - 1, -beta, -alpha)
+
+        if _eval > _best_score:
+            _best_score = _eval
+            _best_move = _move_obj.uci()
+
         if _eval >= beta:
-            return beta
+            transposition_table[_fen] = (depth, _best_score, _best_move, "LOWER")
+            return _best_score
+
         alpha = max(alpha, _eval)
 
-    return alpha
+    _flag = "UPPER" if _best_score <= _og_alpha else "EXACT"
+    transposition_table[_fen] = (depth, _best_score, _best_move, _flag)
+    return _best_score
 
 
 def get_ordered_moves(board: chess.Board) -> list[chess.Move]:
@@ -78,7 +127,3 @@ def is_square_attacked_by_pawn(board: chess.Board, square: chess.Square) -> bool
         if board.piece_type_at(attacker) == chess.PAWN:
             return True
     return False
-
-
-if __name__ == "__main__":
-    print(get_ordered_moves(chess.Board()))

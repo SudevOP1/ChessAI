@@ -56,9 +56,10 @@ class ChessGame:
                 ):
                     self.running = False
                     print()
+                    saved_game_file_path = save_game(self.board)
                     print_debug(
                         DEBUG,
-                        f"saved game to '{save_game(self.board)}'",
+                        f"saved game to '{saved_game_file_path}'",
                         color="green",
                     )
                     print()
@@ -129,14 +130,14 @@ class ChessGame:
             # rendering game here
             self.window.fill(BG_COLOR)
 
-            self.make_bot_move()
-
             self.draw_board()
             self.draw_available_moves()
             self.draw_pieces()
             self.draw_moves()
             self.draw_promotion_query()
             self.draw_fps()
+
+            self.make_bot_move()
 
             py.display.flip()
             self.clock.tick(GAME_FPS)  # fps
