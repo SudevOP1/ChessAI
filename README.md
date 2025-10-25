@@ -4,6 +4,9 @@ This project aims to develop a chess playing ai bot<br>
 [pygame docs](https://www.pygame.org/docs/)
 <br>
 
+## 🤖 Current Bot Performance
+![Example](https://raw.githubusercontent.com/SudevOP1/ChessAI/main/code/analysis/bot_performance_comparison.png)<br> 
+
 ## 🚀 How to run it locally
 
 ### 1. Clone the repo
