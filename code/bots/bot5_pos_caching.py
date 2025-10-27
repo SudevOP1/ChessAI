@@ -11,7 +11,12 @@ transposition_table: dict[str, tuple[int, int, str, str]] = {}
 
 
 def bot_pos_caching(board: chess.Board, depth: int = 5) -> str:
+    global transposition_table
     _best_move, _ = search_root(board, depth)
+
+    if board.is_irreversible(_best_move):
+        transposition_table.clear()
+    
     return _best_move.uci()
 
 
@@ -41,6 +46,7 @@ def search(
     alpha: int = NEG_INF,
     beta: int = POS_INF,
 ) -> int:
+    global transposition_table
     _og_alpha = alpha
     _fen = board.fen()
 
