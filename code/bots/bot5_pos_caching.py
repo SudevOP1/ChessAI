@@ -16,7 +16,7 @@ def bot_pos_caching(board: chess.Board, depth: int = 5) -> str:
 
     if board.is_irreversible(_best_move):
         transposition_table.clear()
-    
+
     return _best_move.uci()
 
 
@@ -27,7 +27,7 @@ def search_root(board: chess.Board, depth: int = 3) -> tuple[chess.Move, int]:
     _alpha = NEG_INF
     _beta = POS_INF
 
-    for _move in get_ordered_moves(board):
+    for _move in get_ordered_moves(board, list(board.legal_moves)):
         _temp_board = board.copy()
         _temp_board.push(_move)
         _eval = -search(_temp_board, depth - 1, -_beta, -_alpha)
@@ -70,7 +70,8 @@ def search(
                 return _cached_score
 
     if depth == 0:
-        return get_eval(board)
+        # return get_eval(board)
+        return search_all_captures(board, alpha, beta)
 
     if board.is_game_over():
         if board.is_checkmate():
@@ -80,7 +81,7 @@ def search(
     _best_score = NEG_INF
     _best_move = None
 
-    for _move_obj in get_ordered_moves(board):
+    for _move_obj in get_ordered_moves(board, list(board.legal_moves)):
         _temp_board = board.copy()
         _temp_board.push(_move_obj)
         _eval = -search(_temp_board, depth - 1, -beta, -alpha)
@@ -100,10 +101,9 @@ def search(
     return _best_score
 
 
-def get_ordered_moves(board: chess.Board) -> list[chess.Move]:
+def get_ordered_moves(board: chess.Board, moves: list[chess.Move]) -> list[chess.Move]:
     """returns all legal moves sorted by their score (highest first)"""
-    _legal_moves = list(board.legal_moves)
-    return sorted(_legal_moves, key=lambda m: get_move_score(board, m), reverse=True)
+    return sorted(moves, key=lambda m: get_move_score(board, m), reverse=True)
 
 
 def get_move_score(board: chess.Board, move: chess.Move) -> int:
@@ -133,3 +133,24 @@ def is_square_attacked_by_pawn(board: chess.Board, square: chess.Square) -> bool
         if board.piece_type_at(attacker) == chess.PAWN:
             return True
     return False
+
+
+def search_all_captures(board: chess.Board, alpha: int, beta: int) -> int:
+    _eval = get_eval(board)
+    if _eval >= beta:
+        return beta
+    alpha = max(alpha, _eval)
+
+    _capture_moves = board.generate_legal_captures()
+    get_ordered_moves(board, _capture_moves)
+
+    for _capture_move in _capture_moves:
+        board.push(_capture_move)
+        _eval = -search_all_captures(-beta, -alpha)
+        board.pop()
+
+        if _eval >= beta:
+            return beta
+        alpha = max(alpha, _eval)
+
+    return alpha
