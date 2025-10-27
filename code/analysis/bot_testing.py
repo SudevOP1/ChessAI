@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
         for _name, (_func, _max_depth) in {
             "bot_alpha_beta": (bot_alpha_beta, 4),
-            "bot_move_ordering": (bot_move_ordering, 6),
+            "bot_move_ordering": (bot_move_ordering, 5),
             "bot_pos_caching": (bot_pos_caching, 7),
         }.items():
 
