@@ -388,8 +388,14 @@ class ChessGame:
             return
 
         # handling promotion
-        if (self.held_piece.name == "P" and _to_row_i == 0 and self.board.turn) or (
-            self.held_piece.name == "p" and _to_row_i == 7 and not self.board.turn
+        if (
+            self.held_piece.name == "P"
+            and _to_row_i == 0
+            and self.board.turn == chess.WHITE
+        ) or (
+            self.held_piece.name == "p"
+            and _to_row_i == 7
+            and self.board.turn == chess.BLACK
         ):
             for _move in self.available_moves:
                 if len(_move) == 5:
@@ -461,7 +467,7 @@ class ChessGame:
         return True
 
     def handle_castling(
-        self, _uci_move: str, move_debug_msg: str = "move made"
+        self, _uci_move: str, move_debug_msg: str = "player move"
     ) -> None:
         _castling_handler = {
             "e1g1": {
@@ -528,7 +534,7 @@ class ChessGame:
         self.make_confirmed_move(_uci_move, move_debug_msg)
 
     def handle_en_passant(
-        self, _uci_move: str, move_debug_msg: str = "move made"
+        self, _uci_move: str, move_debug_msg: str = "player move"
     ) -> None:
         _to_row_i, _to_col_i = get_index_notation(_uci_move[2:4])
         direction = 1 if self.board.turn == chess.WHITE else -1
