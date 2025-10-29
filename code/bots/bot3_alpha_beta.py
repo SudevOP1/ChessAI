@@ -34,7 +34,7 @@ def search(
     """
 
     if depth == 0:
-        return get_eval(board)
+        return calc_eval(board)
 
     # checkmate or draw
     if board.is_game_over():

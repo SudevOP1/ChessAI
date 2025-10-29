@@ -10,7 +10,7 @@ flag    ∈ {'EXACT', 'LOWER', 'UPPER'}
 transposition_table: dict[str, tuple[int, int, str, str]] = {}
 
 
-def bot_pos_caching(board: chess.Board, depth: int = 5) -> str:
+def bot_active_square(board: chess.Board, depth: int = 4) -> str:
     global transposition_table
     _best_move, _ = search_root(board, depth)
 
@@ -70,7 +70,7 @@ def search(
                 return _cached_score
 
     if depth == 0:
-        # return get_eval(board)
+        # return get_active_square_eval(board)
         return search_all_captures(board, alpha, beta)
 
     if board.is_game_over():
@@ -136,7 +136,7 @@ def is_square_attacked_by_pawn(board: chess.Board, square: chess.Square) -> bool
 
 
 def search_all_captures(board: chess.Board, alpha: int, beta: int) -> int:
-    _eval = calc_eval(board)
+    _eval = get_active_square_eval(board)
     if _eval >= beta:
         return beta
     alpha = max(alpha, _eval)
@@ -154,3 +154,11 @@ def search_all_captures(board: chess.Board, alpha: int, beta: int) -> int:
         alpha = max(alpha, _eval)
 
     return alpha
+
+
+def get_active_square_eval(board: chess.Board) -> int:
+    _value = 0
+    _value += calc_eval(board)
+    _value += calc_active_square_eval(board)
+    return _value
+

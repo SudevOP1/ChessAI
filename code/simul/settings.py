@@ -1,10 +1,13 @@
 from typing import Callable
+import chess
 
-from code.bots.bot1_random          import bot_random
-from code.bots.bot2_classic_depth   import bot_classic_depth
-from code.bots.bot3_alpha_beta      import bot_alpha_beta
-from code.bots.bot4_move_ordering   import bot_move_ordering
-from code.bots.bot5_pos_caching     import bot_pos_caching
+from code.bots.bot1_random              import bot_random
+from code.bots.bot2_classic_depth       import bot_classic_depth
+from code.bots.bot3_alpha_beta          import bot_alpha_beta
+from code.bots.bot4_move_ordering       import bot_move_ordering
+from code.bots.bot5_pos_caching         import bot_pos_caching
+from code.bots.bot6_sqaure_heuristics   import bot_sqaure_heuristics
+from code.bots.bot7_active_square       import bot_active_square
 
 WINDOW_NAME = "chess"
 WINDOW_ICON = "assets/pieces/wn.png"
@@ -14,12 +17,14 @@ WINDOW_HEIGHT = 720
 GAME_FPS = 60
 
 PLAYER_OPTIONS: dict[str, Callable | None] = {
-    "player"        : None,
-    "random"        : bot_random,
-    "classic_depth" : bot_classic_depth,
-    "alpha_beta"    : bot_alpha_beta,
-    "move_ordering" : bot_move_ordering,
-    "pos_caching"   : bot_pos_caching,
+    "player"                : None,
+    "bot_random"            : bot_random,
+    "bot_classic_depth"     : bot_classic_depth,
+    "bot_alpha_beta"        : bot_alpha_beta,
+    "bot_move_ordering"     : bot_move_ordering,
+    "bot_pos_caching"       : bot_pos_caching,
+    "bot_sqaure_heuristics" : bot_sqaure_heuristics,
+    "bot_active_square"     : bot_active_square,
 }
 
 SQUARE_SIZE         = 80
