@@ -17,9 +17,9 @@ Implements the alpha-beta pruning algorithm to skip evaluation of branches that 
 Enhances alpha-beta pruning by sorting moves (e.g., captures first) to increase pruning effectiveness and reduce search time<br>
 ### bot5_pos_caching
 Adds a transposition table (position caching) to store and reuse previously evaluated board states, minimizing redundant computations<br>
-### bot4_move_ordering
+### bot6_square_heuristics
 To be completed<br>
-### bot5_pos_caching
+### bot7_active_square
 To be completed<br>
 
 ## 🚀 How to run it locally
