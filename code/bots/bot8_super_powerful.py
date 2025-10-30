@@ -1,7 +1,6 @@
 import chess
 
 from code.bots.common import *
-from code.simul.settings import *
 
 """
 key     = fen
@@ -11,7 +10,7 @@ flag    ∈ {'EXACT', 'LOWER', 'UPPER'}
 transposition_table: dict[str, tuple[int, int, str, str]] = {}
 
 
-def bot_sqaure_heuristics(board: chess.Board, depth: int = 5) -> str:
+def bot_super_powerful(board: chess.Board, depth: int = 4) -> str:
     global transposition_table
     _best_move, _ = search_root(board, depth)
 
@@ -51,7 +50,6 @@ def search(
     _og_alpha = alpha
     _fen = board.fen()
 
-    # check cache
     if _fen in transposition_table:
         (
             _cached_depth,
@@ -72,6 +70,7 @@ def search(
                 return _cached_score
 
     if depth == 0:
+        # return get_active_square_eval(board)
         return search_all_captures(board, alpha, beta)
 
     if board.is_game_over():
@@ -137,7 +136,7 @@ def is_square_attacked_by_pawn(board: chess.Board, square: chess.Square) -> bool
 
 
 def search_all_captures(board: chess.Board, alpha: int, beta: int) -> int:
-    _eval = get_heu_eval(board)
+    _eval = get_active_square_eval(board)
     if _eval >= beta:
         return beta
     alpha = max(alpha, _eval)
@@ -156,49 +155,11 @@ def search_all_captures(board: chess.Board, alpha: int, beta: int) -> int:
 
     return alpha
 
-def get_heu_eval(board: chess.Board) -> int:
-    _value = 0
 
-    # check for endgame
-    _material_score = 0
-    for _piece_type, _base_value in piece_values.items():
-        if _piece_type == chess.KING:
-            continue
-        _material_score += _base_value * (
-            len(board.pieces(_piece_type, chess.WHITE))
-            + len(board.pieces(_piece_type, chess.BLACK))
-        )
-    _endgame = _material_score < ENDGAME_THRESHOLD
-
-    for _piece_type, _base_value in piece_values.items():
-        _table: list[int]
-        if _piece_type == chess.KING:
-            _table = (
-                PIECE_SQUARE_TABLES[chess.KING]["end game"]
-                if _endgame
-                else PIECE_SQUARE_TABLES[chess.KING]["middle game"]
-            )
-        else:
-            _table = PIECE_SQUARE_TABLES[_piece_type]
-
-        # white
-        for _square in board.pieces(_piece_type, chess.WHITE):
-            _value += _base_value
-            _value += _table[_square]
-
-        # black
-        for _square in board.pieces(_piece_type, chess.BLACK):
-            _value -= _base_value
-            _mirrored_square = chess.square_mirror(_square)
-            _value -= _table[_mirrored_square]
-
-    return _value if board.turn == chess.WHITE else -_value
-
-
-def get_heu_eval(board: chess.Board) -> int:
+def get_active_square_eval(board: chess.Board) -> int:
     _value = 0
     _value += calc_eval(board)
+    _value += calc_active_square_eval(board)
     _value += calc_heu_eval(board)
     return _value
-
 

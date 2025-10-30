@@ -8,6 +8,7 @@ from code.bots.bot4_move_ordering       import bot_move_ordering
 from code.bots.bot5_pos_caching         import bot_pos_caching
 from code.bots.bot6_sqaure_heuristics   import bot_sqaure_heuristics
 from code.bots.bot7_active_square       import bot_active_square
+from code.bots.bot8_super_powerful      import bot_super_powerful
 
 WINDOW_NAME = "chess"
 WINDOW_ICON = "assets/pieces/wn.png"
@@ -25,6 +26,7 @@ PLAYER_OPTIONS: dict[str, Callable | None] = {
     "bot_pos_caching"       : bot_pos_caching,
     "bot_sqaure_heuristics" : bot_sqaure_heuristics,
     "bot_active_square"     : bot_active_square,
+    "bot_super_powerful"    : bot_super_powerful
 }
 
 SQUARE_SIZE         = 80
