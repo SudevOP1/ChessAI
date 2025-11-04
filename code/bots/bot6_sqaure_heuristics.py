@@ -1,7 +1,6 @@
 import chess
 
 from code.bots.common import *
-from code.simul.settings import *
 
 
 def bot_sqaure_heuristics(board: chess.Board, depth: int = 5) -> str:
