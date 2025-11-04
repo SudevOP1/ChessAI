@@ -1,10 +1,12 @@
 import chess, time, csv
 
-from code.bots.bot1_random import bot_random
-from code.bots.bot2_classic_depth import bot_classic_depth
-from code.bots.bot3_alpha_beta import bot_alpha_beta
-from code.bots.bot4_move_ordering import bot_move_ordering
-from code.bots.bot5_pos_caching import bot_pos_caching
+from code.bots.bot2_classic_depth       import bot_classic_depth
+from code.bots.bot3_alpha_beta          import bot_alpha_beta
+from code.bots.bot4_move_ordering       import bot_move_ordering
+from code.bots.bot5_pos_caching         import bot_pos_caching
+from code.bots.bot6_sqaure_heuristics   import bot_sqaure_heuristics
+from code.bots.bot7_active_square       import bot_active_square
+from code.bots.bot8_super_powerful      import bot_super_powerful
 
 
 if __name__ == "__main__":
@@ -19,9 +21,13 @@ if __name__ == "__main__":
         _csv_writer.writerow(["bot", "move", "depth", "time", "fen"])
 
         for _name, (_func, _max_depth) in {
-            "bot_alpha_beta": (bot_alpha_beta, 4),
-            "bot_move_ordering": (bot_move_ordering, 5),
-            "bot_pos_caching": (bot_pos_caching, 7),
+            "bot_classic_depth"     : (bot_classic_depth    , 2),
+            "bot_alpha_beta"        : (bot_alpha_beta       , 3),
+            "bot_move_ordering"     : (bot_move_ordering    , 3),
+            "bot_pos_caching"       : (bot_pos_caching      , 5),
+            "bot_sqaure_heuristics" : (bot_sqaure_heuristics, 5),
+            "bot_active_square"     : (bot_active_square    , 5),
+            "bot_super_powerful"    : (bot_super_powerful   , 5),
         }.items():
 
             print(f"{_name}:")
