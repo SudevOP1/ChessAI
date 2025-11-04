@@ -18,9 +18,11 @@ Enhances alpha-beta pruning by sorting moves (e.g., captures first) to increase 
 ### bot5_pos_caching
 Adds a transposition table (position caching) to store and reuse previously evaluated board states, minimizing redundant computations<br>
 ### bot6_square_heuristics
-To be completed<br>
+Evaluates positional strength by rewarding pieces placed on strategically valuable squares and adjusts king safety based on the game phase (middle game vs endgame)<br>
 ### bot7_active_square
-To be completed<br>
+Rewards positions where pieces control or attack more squares on the board, emphasizing overall piece activity and mobility over static placement<br>
+### bot8_super_powerful
+Combines both square-based heuristics and active-square evaluation to balance positional understanding with piece activity, making it the strongest and most adaptive bot<br>
 
 ## 🚀 How to run it locally
 
