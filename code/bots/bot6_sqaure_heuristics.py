@@ -3,7 +3,7 @@ import chess
 from code.bots.common import *
 
 
-def bot_sqaure_heuristics(board: chess.Board, depth: int = 5) -> str:
+def bot_sqaure_heuristics(board: chess.Board, depth: int = 4) -> str:
     global transposition_table
     _best_move, _ = search_root(board, get_eval, depth)
 
