@@ -1,7 +1,7 @@
 # ChessAI
 
 This project aims to develop a chess playing ai bot<br>
-[pygame docs](https://www.pygame.org/docs/)
+Made using [pygame](https://www.pygame.org/) ([docs](https://www.pygame.org/docs/)).
 <br>
 
 ## 🤖 Current Bot Performance
